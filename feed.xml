@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>M5U 256GB LLM 朝リサーチ</title>
+    <link>https://muchas1975.github.io/m5u-llm-digest/</link>
+    <atom:link href="https://muchas1975.github.io/m5u-llm-digest/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Apple M5 Ultra 256GB でのLLM実行環境・適したモデル・ハーネスの毎朝リサーチ（出どころつき）</description>
+    <language>ja</language>
+    <lastBuildDate>Mon, 09 Nov 2026 16:01:32 +0900</lastBuildDate>
+    <pubDate>Mon, 09 Nov 2026 08:06:14 +0900</pubDate>
+    <generator>hermes researcher bot</generator>
+    <item>
+      <title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/9）</title>
+      <link>https://muchas1975.github.io/m5u-llm-digest/</link>
+      <guid isPermaLink="false">2026-11-09_08-06-14.md</guid>
+      <pubDate>Mon, 09 Nov 2026 08:06:14 +0900</pubDate>
+      <description>&lt;p&gt;&lt;b&gt;何が新しかったか&lt;/b&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;512GB M5U が 10/28 に発注開始&lt;/b&gt;。$22,299〜、納期は11月末〜12月初旬。&lt;/li&gt;
+&lt;li&gt;llama.cpp が週末に2リリース進み、&lt;b&gt;M5U で top-k が20-45%速くなる最適化&lt;/b&gt;が入った。&lt;/li&gt;
+&lt;li&gt;国内で &lt;b&gt;Claude Code × ローカルLLM の実案件検証&lt;/b&gt;が出た（GLM-5.3-Flash は完走すれば品質同等だが4-15倍遅い、という結論）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;新着ニュース&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;512GB M5U の発注が始まった（10/28）&lt;/b&gt;: 最低 $22,299、16TB SSD にすると $29,799。納期は11月末〜12月初旬との報道あり。512GB は 36コアCPU/80コアGPU のみで、256GB からの追加は $11,500（&lt;a href="https://www.techrepublic.com/article/news-apple-mac-studio-512gb-ram-price-specs/"&gt;https://www.techrepublic.com/article/news-apple-mac-studio-512gb-ram-price-specs/&lt;/a&gt; 、納期は &lt;a href="https://mezha.net/eng/news/39a0d4a9_apple_prices_512gb_mac/"&gt;https://mezha.net/eng/news/39a0d4a9_apple_prices_512gb_mac/&lt;/a&gt; ）。メモリアップの $15,500 は M3 Ultra 2025年当時の同ステップの &lt;b&gt;1GB あたり約3.9倍の単価&lt;/b&gt;（PCメモリ高騰に沿った水準）（&lt;a href="https://www.techradar.com/pro/apple-will-now-sell-you-a-mac-studio-with-512gb-of-ram-but-itll-cost-you-as-much-as-a-good-sized-family-car"&gt;https://www.techradar.com/pro/apple-will-now-sell-you-a-mac-studio-with-512gb-of-ram-but-itll-cost-you-as-much-as-a-good-sized-family-car&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llama.cpp b12202（11/8）→ b12208&lt;/b&gt;: M5 Ultra 上で top-k を &lt;b&gt;20-45% 高速化&lt;/b&gt;する Metal 最適化（atomic ループを連続パスに変える）。コミットの支援クレジットに「GLM-5.3-Flash-GGUF (Mac Studio, M5 Ultra, 256GB)」の署名が付き、&lt;b&gt;M5U で実際に動かしているコミュニティが llama.cpp 本体の改善に食い込んでいる&lt;/b&gt;のが分かる（&lt;a href="https://github.com/ggml-org/llama.cpp/releases/"&gt;https://github.com/ggml-org/llama.cpp/releases/&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llamaperf の件数は止まった模様&lt;/b&gt;: 前回「34件（as of 7 Nov）」の後、今日のスニペットも「34件・as of 8 Nov」のまま。ただしページを直接読むと古いキャッシュ（32件・as of 5 Nov）が返ってきたので、正確な件数は断定できない（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;実行環境・事例&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;Claude Code の開発ワーカーにローカルLLMを混ぜる実案件検証（11/3、日本語）&lt;/b&gt;: Rails のマージ済み PR 18件を題材に、M5U 256GB（64コアGPU）で測定。結論は、&lt;b&gt;Sonnet 単独が一番速く安い&lt;/b&gt;（16/18合格・199件/h・$0.36）、GLM-5.3-Flash 単独は同品質（16/18）だが13件/h で 1/15、&lt;b&gt;「Claudeが仕様整理→ローカルが実装→Claudeがレビュー」の分業は費用2-4倍・処理量1/20で割に合わない&lt;/b&gt;。技術メモとして: mlx-vlm だと 3.8 tok/s だった GLM が oMLX+MTP で 69-73 tok/s（実行系で20倍差）、Claude Code 経由でも oMLX のプレフィックスキャッシュ命中率 98.9% で prefill は詰まない、GLM は「ターン数の使い切り」で落ちやすい（&lt;a href="https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/"&gt;https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/&lt;/a&gt; ）。&lt;b&gt;注意点&lt;/b&gt;： macOS の動く壁紙（Aerial）がデコードサービスのメモリを10時間で104GBまで膨らませ、GLM のロードが落ちたという報告が記事内にある。静止画に変えると22MBに戻る。256GB 機ではモデルロード前に常駐プロセスの確認が要る（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;NetworkChuck の M5U vs M3U 実測リポジトリ&lt;/b&gt;（前回未報告）: 同一モデル・同一設定で、Qwen3.8 27B の 32K プロンプト読みが &lt;b&gt;388→1,526 tok/s（3.9倍）&lt;/b&gt;、生成 27.8→42.6（1.5倍）、初トークン 83.6秒→21.3秒。画像生成 FLUX.2 klein 4B が 7.00秒→1.77秒。「読みは4倍、書きは1.5倍」の構図を公式スペック根拠つきで整理したもの。Hermes agent を 27B で回して 89秒、というエージェント実測も載っている（&lt;a href="https://github.com/theNetworkChuck/mac-studio-m5-ultra-local-ai"&gt;https://github.com/theNetworkChuck/mac-studio-m5-ultra-local-ai&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;1M コンテキストの個人実測（前回未報告）&lt;/b&gt;: DeepSeek-V4.1-Flash 自作 3-bit で、130K prefill 2,545 tok/s、&lt;b&gt;1M prefill 1,998 tok/s（521秒）&lt;/b&gt;。会話再開時は prefix cache で 128K を0.8秒（従来53秒）。なお RTX PRO 6000 ×2 を並べると同じ 130K が 9,724 tok/s になる比較表付き（&lt;a href="https://tacos8me.github.io/m5-ultra/"&gt;https://tacos8me.github.io/m5-ultra/&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;向いているモデル&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;MiMo-V2.6-Flash が帯域比を示さない実例（llmcheck 更新）&lt;/b&gt;: M5U 80コアで 61.7 tok/s に対し、M3 Ultra の3実測は 55.1-59.4 tok/s で&lt;b&gt;差は4-12%しか付かない&lt;/b&gt;（帯域比1.5倍に遠い）。この実測を機に llmcheck のインデックス1位は Qwen 3.6-35B-A3B に交代（&lt;a href="https://llmcheck.net/blog/m5-ultra-vs-m3-ultra-vs-m5-max-local-llm/"&gt;https://llmcheck.net/blog/m5-ultra-vs-m3-ultra-vs-m5-max-local-llm/&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;ボヘミアンシリコン（レンタル機）の6モデル表が同記事経由で読める： GPT-oss 20B 184 tok/s、Qwen3.5 9B 167、GPT-oss 120B 120、Gemma 4 31B 31（mlx-lm 0.32）（同上）&lt;/li&gt;
+&lt;li&gt;512GB を検討する場合の参考： DeepSeek-V4.1-Flash の 3-bit（381GB）なら 512GB（実質409GB）に完全搭載可能、と vdf.ai のガイドが整理（&lt;a href="https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/"&gt;https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;ハーネス・ツール&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;oMLX 0.7.3 安定版（10/31）の中身&lt;/b&gt;（前回は 0.7.4.dev1 の話のみだったので整理）: DeepSeek V4.1 Flash に INT8 Activation Prefill を追加し、64K prefill が &lt;b&gt;2,882→3,507 tok/s（+22%）&lt;/b&gt;、195K で +29%。Engram prefetch で 128K が +15%。8リクエスト同時で KV キャッシュをその場更新に変え、M3 Ultra の 8ストリーム実測でメモリ -35%・decode +33%（&lt;a href="https://newruntime.com/posts/omlx-0-7-3-speeds-up-deepseek-v4-fd0577/"&gt;https://newruntime.com/posts/omlx-0-7-3-speeds-up-deepseek-v4-fd0577/&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llama.cpp v0.9.0（11/4、不確か）&lt;/b&gt;: dev.to 記事が OCP FP8 量子化、複数シーケンス KV で効く &lt;code&gt;flash_attn_ext_rows&lt;/code&gt;、Chatterbox TTS などの内容で報じているが、&lt;b&gt;v0.9.0 タグは GitHub リリース一覧で確認できず&lt;/b&gt;（b12202/b12208 が先頭）。報道ベースとしておく（&lt;a href="https://dev.to/madnessbrains_i/llamacpp-090-ships-chatterbox-tts-and-ocp-fp8-local-speech-still-dies-on-the-windows-capture-10n0"&gt;https://dev.to/madnessbrains_i/llamacpp-090-ships-chatterbox-tts-and-ocp-fp8-local-speech-still-dies-on-the-windows-capture-10n0&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;LM Studio 本体は 0.4.28（10/31）が現行、と vdf.ai が整理。M5U 直結の実測数字は相変わらずなし（&lt;a href="https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/"&gt;https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;b&gt;次に見るべき点&lt;/b&gt;: b12202/b12208 で入った M5U 固有の最適化が、GLM-5.3-Flash や DeepSeek のコミュニティ実測 tok/s に反映されるか。llamaperf の件数が34から動き出すかもあわせて。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/8）</title>
+      <link>https://muchas1975.github.io/m5u-llm-digest/</link>
+      <guid isPermaLink="false">2026-11-08_08-04-19.md</guid>
+      <pubDate>Sun, 08 Nov 2026 08:04:19 +0900</pubDate>
+      <description>&lt;p&gt;&lt;b&gt;何が新しかったか&lt;/b&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;llamaperf の追試レポートが&lt;b&gt;33件→34件&lt;/b&gt;に動き出し、DeepSeek 552B（3-bit）のメディアン &lt;b&gt;73.4 tok/s&lt;/b&gt; が公式数字として載った。&lt;/li&gt;
+&lt;li&gt;件数以上に中身が増えていて、&lt;b&gt;2台クラスタなら 200 tok/s&lt;/b&gt;、逆に &lt;b&gt;4-bit DeepSeek は1台だと 20-25 tok/s に落ちる&lt;/b&gt;、という両極の実測が読めた。&lt;/li&gt;
+&lt;li&gt;LM Studio と llama.cpp に小さな更新（どちらも M5U 直結の数字はまだなし）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;新着ニュース&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;llamaperf が 33→34 件に&lt;/b&gt;（as of 7 Nov）。前回「33 のまま」だった追試レポートがようやく +1。件数の伸びはまだ1日1件ペースだが、DeepSeek V4.1 Flash 552B・16B active の 3-bit で &lt;b&gt;median 73.4 tok/s&lt;/b&gt; が集計として出た。エンジン内訳は oMLX 16件・MLX 7件・llama.cpp 3件など（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llama.cpp b12191（11/7）&lt;/b&gt;: MoE キャッシュで逃した expert を &lt;b&gt;CPU 側で計算する&lt;/b&gt;機能（&lt;code&gt;--moe-cache-cpu-share&lt;/code&gt;）と、最適値を推測してくれる &lt;code&gt;moe-cache-tune.py&lt;/code&gt; スクリプトが入った。256GB で MoE 大モデルのキャッシュが足りないときに効く仕組みだが、M5U での実測数字はまだ報告されていない（&lt;a href="https://github.com/ggml-org/llama.cpp/releases"&gt;https://github.com/ggml-org/llama.cpp/releases&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;実行環境・事例&lt;/h3&gt;
+&lt;p&gt;（llamaperf のレポート一覧の中身は今回初めて確認できたもの。各レポートに日付表記はないので「34件の中の1つ」までの正確さ）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;2×M5U 256GB クラスタで 200 tok/s&lt;/b&gt;: Thunderbolt 5 ケーブル2本でつなぎ、Tensorfold の公式ガイド通りに &lt;b&gt;DeepSeek 側がセットアップまで代行&lt;/b&gt;してくれたという報告。Qwen3.8 Flash-Next（Q6）で decode 200 tok/s・prefill 8,000 tok/s。同じクラスタの GLM-5.3-Flash は 50 tok/s で「遅すぎる」と不評。ハーネスは Hermes を使っていて「軽いハーネスなら速くなるか」と質問つき（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb/reports"&gt;https://llamaperf.com/gpu/m5-ultra-256gb/reports&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;4-bit DeepSeek は1台だと載りきらない&lt;/b&gt;: oQ4e だと MoE expert を 65% SSD に逃がす必要があり decode &lt;b&gt;20-25 tok/s&lt;/b&gt;・prefill 500 tok/s（メモリ使用量は最大 203.6GB）。「3-bit で 73-100 tok/s」より全然遅いので、&lt;b&gt;256GB 単体の実用線は 3-bit 相当まで&lt;/b&gt;という裏付けになった（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;GLM-5.3-Flash を llama.cpp で 61 tok/s&lt;/b&gt;: 内蔵 MTP ヘッドの確率的 draft（3トークン）を使った値で、MTP off だと 39.7 tok/s。&lt;b&gt;262K コンテキストが全部入りで 15GiB 余る&lt;/b&gt;。ただし deep context に未マージの修正が必要という注意つき（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;M5U 256GB（prefill）+ M3 Ultra 512GB（decode）の分割構成&lt;/b&gt;: JACCL RDMA（TB5×2）で前段と後段を分け、35万トークン級の KV ハンドオフが 38ms。first token が 18.5秒（1台だと40秒相当の計算）。ただし「prefill 側に全モデルが必要なので、載るのは 256GB に収まるモデル限定」と考察つき（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;DeepSeek 552B Q4 + SSD Engram の動画（11/5）&lt;/b&gt;: 「M5U 256GB で Q4 を SSD Engram で、DGX Spark クラスタと比較」という動画が上がっている。ページが JS 動画で&lt;b&gt;中身は確認できず不確か&lt;/b&gt;（&lt;a href="https://divert.stream/watch/TCZtDI2K1nY"&gt;https://divert.stream/watch/TCZtDI2K1nY&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;向いているモデル&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;Qwen3.5 122B-A10B（4-bit）が 74.7 tok/s・prefill 2,710 tok/s&lt;/b&gt;: DeepSeek 552B 3-bit（73.4 tok/s）とほぼ同じ速度で、メモリ余裕は 72.3GB 使用と軽い。「73 tok/s 以上欲しいなら Qwen3.5 のほうが楽」という比較材料（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Meta の Muse Spark Open（10/15、前回未報告）&lt;/b&gt;: 総 816B・42B active の MoE モデル。4-bit でも約 493GB なので 512GB 1台にも載らず、&lt;b&gt;M5U 512GB 2台の tensor parallel で 25 tok/s、4台で 37 tok/s&lt;/b&gt;（Apple 公布の MLX ベンチ）。256GB 単体では動かないが、「M5U を複数台つなげばフロンティア級も動く」ことの公式裏付け（&lt;a href="https://www.iclarified.com/102861/meta-releases-muse-spark-open-ai-optimized-for-mac-studio"&gt;https://www.iclarified.com/102861/meta-releases-muse-spark-open-ai-optimized-for-mac-studio&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;ハーネス・ツール&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;LM Studio Bionic 1.2.0（11/5）&lt;/b&gt;: 前回書いた oMLX エンジン搭載（1.1.10）の次。&lt;b&gt;oMLX 0.1.0 エンジン&lt;/b&gt;と llama.cpp 2.67.0 拡張パックに更新。実測数字なし（&lt;a href="https://lmstudio.ai/changelog"&gt;https://lmstudio.ai/changelog&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;oMLX は 0.7.4.dev1（11/4）のまま更新なし&lt;/b&gt;。前回の Prefill Accelerator が現時点で最新（&lt;a href="https://github.com/jundot/omlx/releases"&gt;https://github.com/jundot/omlx/releases&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;b&gt;次に見るべき点&lt;/b&gt;: llamaperf のレポート件数が 34 から伸びるか（6→7 Nov は +1）。伸び始めると「256GB で 552B が 73 tok/s」が個人の実績から集計に変わる。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/7）</title>
+      <link>https://muchas1975.github.io/m5u-llm-digest/</link>
+      <guid isPermaLink="false">2026-11-07_08-04-26.md</guid>
+      <pubDate>Sat, 07 Nov 2026 08:04:26 +0900</pubDate>
+      <description>&lt;p&gt;&lt;b&gt;何が新しかったか&lt;/b&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;前回「独立再現待ち」だった DeepSeek 552B の 3-bit に、11/3 に&lt;b&gt;精度93%・decode 100 tok/s の独立データ&lt;/b&gt;が出た。&lt;/li&gt;
+&lt;li&gt;oMLX 0.7.4.dev1（11/4）が「2台目の Mac を prefill 専門に使う」機能を追加。Thunderbolt／5GbE の接続だけで prefill が最大3倍になった。&lt;/li&gt;
+&lt;li&gt;552B を単体 M5U 256GB に載せる実装リポジトリが2件現れ、1M コンテキスト深部の decode 実測も読めた。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;新着ニュース&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;552B・3-bit に独立データ（11/2〜11/3）&lt;/b&gt;: rez0__ が 3.0bpw iQ MLX 量子化（MLX-Serve-iQ-MLX-3.0bpw）を 256GB M5 で動かし、&lt;b&gt;精度 93%、decode 100 tok/s、prefill 1500〜1800 tok/s&lt;/b&gt; と報告。前回の 92 tok/s（10/31 のコミュニティ情報）と整合する2つ目のデータがついた。※「93%」がどの評価テストかは二次報道の AGI Hunt だけでは確認できず不確か（&lt;a href="https://agihunt.info/en/p/1a19d9b9dcc70bd62cf5e47618d"&gt;https://agihunt.info/en/p/1a19d9b9dcc70bd62cf5e47618d&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llamaperf のレポート件数は 33 のまま&lt;/b&gt;（6 Nov 時点）。件数ベースの追試レポートはまだ増えていない（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;実行環境・事例&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;tacos8me の個人ベンチ（9/24 測定、前回調査では見つかっていなかった）&lt;/b&gt;: M5U 256GB で DeepSeek-V4.1-Flash を&lt;b&gt;自作 3-bit LSQ&lt;/b&gt; で動かすカーネルとパッチを GitHub 公開中。Engram 読みを SSD 並列で先読み、sparse attention と indexer の書き直し、層バッファの再利用など、greedy 出力を bit-identical に保ったまま最適化（Engram キャッシュで 108→122 tok/s）。本体の全数字はグラフで、本文からは読めなかった。&lt;b&gt;追試用の材料がこれで手に入る&lt;/b&gt;（&lt;a href="https://tacos8me.github.io/m5-ultra/"&gt;https://tacos8me.github.io/m5-ultra/&lt;/a&gt; 、カーネルは &lt;a href="https://github.com/tacos8me/m5-ultra/tree/main/kernels"&gt;https://github.com/tacos8me/m5-ultra/tree/main/kernels&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Mac + RTX 分割（9/29 測定）&lt;/b&gt;: 同じ作者が M5U 256GB に RTX PRO 6000 を2枚 10GbE で繋ぎ、DeepSeek を FP4/FP8 オリジナル重みのまま1モデルとして運用。256GB 単体以外のレーン（&lt;a href="https://tacos8me.github.io/m5-ultra/split/"&gt;https://tacos8me.github.io/m5-ultra/split/&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;TensorFold の Metal エンジンで単体 256GB（新着リポジトリ）&lt;/b&gt;: DeepSeek-V4.1-Flash-1017 を 1M ウィンドウで配信。checkpoint は 418GB でディスク要件 420GB なので SSD ストリーミング前提と読める（推測）。確認できた数字は &lt;b&gt;1M 深部の follow-up が 46.3 tok/s&lt;/b&gt;（1サンプル）と品質（GSM8K 245/250、MATH-500 459/500、tools 58/60）。decode 表は省略部分で文脈が切れて断定できない（&lt;a href="https://github.com/BobClawblaw/deepseek-v41-flash-mlx-m5-ultra/blob/main/README.md"&gt;https://github.com/BobClawblaw/deepseek-v41-flash-mlx-m5-ultra/blob/main/README.md&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;エージェント実験（10/29 完了）&lt;/b&gt;: M5 Max 36GB + M5U 96GB の 2台構成で 30タスク、作成は 27/30 一発合格（残り3はリトライで合格）。別の review-only 20件では&lt;b&gt;誤採用0・誤棄却0&lt;/b&gt;——ただし間違いは意図的に仕込んだもので、自然な誤り分布ではない。前回の tchikuba 記事の「レビューは品質ゲートにならない」とは正反対の結果が出ている（&lt;a href="https://llmonmac.com/en/agent-practice"&gt;https://llmonmac.com/en/agent-practice&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;向いているモデル&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;DeepSeek-V4.1-Flash-1017 oQ2.5e-ngram-mtp&lt;/b&gt;（M5U 80c・11/5 の oMLX ベンチ）: 64k プロンプトで PP 3,252／TG 89.4 tok/s。軽い量子化（2.5-bit 相当）でも 89 tok/s 出る（&lt;a href="https://omlx.ai/benchmarks/performance/c7s9yopm"&gt;https://omlx.ai/benchmarks/performance/c7s9yopm&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;品質スコア付きの集計サイト（llm-bench.io、11/4 のデータあり）&lt;/b&gt;: Qwen3.8-Flash-Next-oQ3.5e-mtp が品質 91.5／97.2 tok/s、コーディングは Ornith-1.5-35B-A3B 84.8点／112 tok/s。llamaperf にない「品質と速度の両方」の視点（&lt;a href="https://llm-bench.io/hardware/apple-m5-ultra"&gt;https://llm-bench.io/hardware/apple-m5-ultra&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;AI Runner（韓国語、11/5 更新）&lt;/b&gt;: DeepSeek Q2 を ds4 で 128K 要求が 25〜27秒のところ、mlx-serve の MLX 経路だと &lt;b&gt;16.5／16.1秒&lt;/b&gt; に（&lt;a href="https://ai-runner.blog.gcempire.net/posts/deepseek-v41-1017-m5ultra-256gb/"&gt;https://ai-runner.blog.gcempire.net/posts/deepseek-v41-1017-m5ultra-256gb/&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;ハーネス・ツール&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;oMLX 0.7.4.dev1（11/4）の Prefill Accelerator&lt;/b&gt;: 大容量 Mac（例 M3U 512GB）に速い GPU の Mac（例 M5 Max 128GB）を足すと、速い側がプロンプト chunk の先頭層を担って prefill が跳ねる。DeepSeek V4.1 Flash は 1,060→3,123 tok/s（+195%）、Qwen3.8 Flash-Next は +180%。&lt;b&gt;Thunderbolt か 5GbE で OK、RDMA 不要&lt;/b&gt;、decode 速度は変わらず KV は大容量側に残る。両 Mac 同じ oMLX バージョンが必要。256GB 一台でも、M5U 同士や M5 Max 足しにする発想が公式に使えるようになった（&lt;a href="https://github.com/jundot/omlx/releases"&gt;https://github.com/jundot/omlx/releases&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;同バージョンの M5U 向け改善&lt;/b&gt;: prefill の buffer pool 化で 43〜48% 高速（#5031）、コールドな shader cache でも最初の 600 トークン decode が 12.4→45.8 tok/s、oQ2e-mtp の prefill が 2,631→3,779 tok/s。&lt;code&gt;omlx launch codex/copilot&lt;/code&gt; でエージェントから &lt;code&gt;/model&lt;/code&gt; で切り替えられる統合も入った（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;安定版 0.7.3 も M5U 実測が公開済み&lt;/b&gt;（前回は 0.7.1 まで書いた）: DeepSeek の INT8 Activation Prefill で prefill +22〜29%、&lt;b&gt;12 同時リクエストの合算 decode が 56.3→125.7 tok/s（+123%）&lt;/b&gt;（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;LM Studio Bionic 1.1.10&lt;/b&gt; が Apple Silicon に oMLX エンジンを搭載（llama.cpp 2.66.0 拡張パックも）。リリース日が確認できていないので不確か（&lt;a href="https://lmstudio.ai/changelog/bionic-v1.1.10"&gt;https://lmstudio.ai/changelog/bionic-v1.1.10&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;b&gt;次に見るべき点&lt;/b&gt;: tacos8me が公開した 3-bit LSQ カーネル・パッチで、他の 256GB オーナーが追試を始めるか。llamaperf のレポート件数（33件）が増え始めると「256GB で 550B 級が実用速度」が確定する。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/6、初回）</title>
+      <link>https://muchas1975.github.io/m5u-llm-digest/</link>
+      <guid isPermaLink="false">2026-11-06_18-40-16.md</guid>
+      <pubDate>Fri, 06 Nov 2026 18:40:16 +0900</pubDate>
+      <description>&lt;p&gt;&lt;b&gt;何が新しかったか&lt;/b&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;256GB で DeepSeek V4.1-Flash 552B をフルに載せて 1M トークン・コンテキスト、decode 92 tok/s の実測が出た（10/31）。&lt;/li&gt;
+&lt;li&gt;日本語の実検証記事が 11/3 に公開：「Claude Code の開発ワーカーにローカルLLMを混ぜる」を実案件で測った結果、GLM-5.3-Flash が本命だが分業構成は割に合わない、という結論。&lt;/li&gt;
+&lt;li&gt;Apple 公式が MLX + RDMA 分散推論の使い方を公開（10/15）。LM Studio は 10/31 に 0.4.28。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;新着ニュース&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;552B が 256GB でフル実行&lt;/b&gt;： DeepSeek V4.1-Flash（552B・アクティブ16B、10/17 オープンソース版）を 3bit 量子化（重み約207GB、残り約49GB）で MLX に載せ、KVキャッシュ bf16・コンテキスト 1M で decode 92 tok/s、prefill 3883 tok/s、MTP／PLD 併用で最大 163 tok/s。条件は concurrency 1・greedy・3回の median（&lt;a href="https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584"&gt;https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;※この数字はコミュニティのツイート画像がソースで、第三者の独立再現はまだ無い。「不確か」として扱う（同記事も明記）。&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llamaperf の集計（11/6 更新）&lt;/b&gt;： M5 Ultra 256GB のレポートは 33 件に増加。最多で走られているのは DeepSeek V4.1 Flash 552B（3-bit）で median 73.4 tok/s・prefill 1010 tok/s（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Apple 公式&lt;/b&gt;（10/15）: MLX v0.30.1 以降で Thunderbolt 5 経由 RDMA（jaccl）対応の分散推論を解説（&lt;a href="https://machinelearning.apple.com/research/mlx-distributed-inference"&gt;https://machinelearning.apple.com/research/mlx-distributed-inference&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Bohemian Silicon&lt;/b&gt;（10/22）: 16 モデルを同時に 1 時間フル負荷 → 約98万トークン生成、100万トークンあたり 0.074 kWh。熱も速度も落ちず（&lt;a href="https://bohemiansilicon.com/blog/mac-studio-m5-ultra-one-hour-ai-load-test/"&gt;https://bohemiansilicon.com/blog/mac-studio-m5-ultra-one-hour-ai-load-test/&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;実行環境・事例&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;日本語の実検証（11/3、tchikuba）&lt;/b&gt;: Rails の実案件 PR 18 件を Claude Code ハーネスで測定。GLM-5.3-Flash（oMLX + oQ4e + MTP、182GB）は 69〜73 tok/s、完走すれば Sonnet と同等の品質（採点者はモデル名を知らず A/S 評価）だが時間は 4〜15 倍、大きな課題では 3 回中 2 回がターン上限。Qwen3-Coder-Next は 110 tok/s と速いが自然言語の課題文で品質が崩れる（合格 50%）。&lt;b&gt;「Claude が仕様整理 → ローカルが実装 → Claude がレビュー」の分業は、費用も速度も Claude 単独に負けた&lt;/b&gt;（指揮・レビューのトークンが本体の実装コストを上回る）。結論は「急がない小〜中の課題を夜間に流す補助レーン」（&lt;a href="https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/"&gt;https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;同記事の重要な発見&lt;/b&gt;： LLM のレビューは品質ゲートにならない——GLM 実装の欠陥を Opus が 3 件中 3 件見逃して approve。自動テストを必ず置くべき（同上）。&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;256GB オーナー向けの注意&lt;/b&gt;（同記事）： macOS の「動く壁紙（Aerial）」が動画デコードの常駐プロセス（VTDecoderXPCService）を 10 時間で約 104GB まで膨らませ、モデルロードを強制終了させた。静止画に変えると 22MB に戻り増えも止まる。大型モデルを載せる前は &lt;code&gt;footprint&lt;/code&gt; や &lt;code&gt;top -o mem&lt;/code&gt; で常駐メモリを確認。&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;GPU の wired 上限&lt;/b&gt;： 既定のままで約 240GiB 使えるので、200GB 級のモデルも設定変更なしで載る。上限を引き上げない方が安全（同上）。&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Apple 公式の分散推論&lt;/b&gt;（10/15）: 単体 M5 Ultra は M3 Ultra 比で TTFT 最大 4.6 倍（Neural Accelerator 効果）、decode 1.6 倍（1.2TB/s）。Muse Spark Open（816B・NVFP4・493GB）は 4 台テンソル並列で 36.7 tok/s。&lt;code&gt;mlx_lm.server&lt;/code&gt; を OpenCode に接続する手順も掲載（&lt;a href="https://machinelearning.apple.com/research/mlx-distributed-inference"&gt;https://machinelearning.apple.com/research/mlx-distributed-inference&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;向いているモデル（256GB 実測）&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;DeepSeek V4.1 Flash 552B・3-bit&lt;/b&gt;（重み207GB）: 92 tok/s、prefill 3883 tok/s、1M コンテキスト（10/31 実測。※コミュニティ情報、未独立再現）（&lt;a href="https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584"&gt;https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;GLM-5.3 Flash（320B・アクティブ18B）&lt;/b&gt;: oMLX oQ4e + MTP で 80〜90 tok/s（llamaperf の複数レポート、一部は 61〜76 tok/s）（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Qwen3.8 Flash-Next（125B・アクティブ6B）&lt;/b&gt;: oMLX Q6_K_XL で 141 tok/s。2 台クラスタ（Q6・Tensorfold）では decode 200 tok/s・prefill 8000 tok/s（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Qwen3.5 122B・アクティブ10B&lt;/b&gt;: 4-bit で 74.7 tok/s（同上）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Qwen3.8 27B（dense）&lt;/b&gt;: MLX 4-bit で 47.6 tok/s（同上）&lt;/li&gt;
+&lt;li&gt;傾向として、256GB の本命は「207GB 超の 550B 級を 3-bit で」「180GB 級の 300B 級を 4-bit で」の2レーン。dense 27B 級は余りを KV や並列に回す用途。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;ハーネス・ツール&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;LM Studio 0.4.28&lt;/b&gt;（10/31）。0.4.27（10/29）は M5 世代 Metal runtime の互換性チェック修正・Neural Engine Prefill の設定追加。0.4.26（10/13）で llama.cpp runtime を 2.50.0（upstream b11337）に更新（&lt;a href="https://lmstudio.ai/changelog/lmstudio"&gt;https://lmstudio.ai/changelog/lmstudio&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;注意&lt;/b&gt;: LM Studio の llama.cpp runtime が M5 世代で Metal 4 の tensor API（Neural Accelerator）を有効化できておらず、GGUF の prefill が 2〜3 倍遅い問題が issue #2040 でまだ open。MLX 系ランタイムは影響なし。0.4.27 の修正で直ったかは不確か。prefill 重視なら MLX／oMLX 系が安全（&lt;a href="https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2040"&gt;https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2040&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Ollama 0.40&lt;/b&gt;（9/25 リリース）: 対応アーキテクチャのモデルは Apple Silicon で MLX をデフォルト実行に（&lt;a href="https://jacar.es/en/ollama-0-40-mlx-default-apple-silicon/"&gt;https://jacar.es/en/ollama-0-40-mlx-default-apple-silicon/&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;oMLX&lt;/b&gt; が 256GB では最も人気のエンジン（llamaperf 33 件中 15 件が oMLX、MLX 7 件）。0.7.1 で GLM が +20〜30 tok/s、0.7.3rc1 まで出ている（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;MLX-Serve プラグイン&lt;/b&gt;（10/30）: DeepSeek 4.1 向けコミュニティ STQ カーネル対応が発表（10/31 記事が報道）（&lt;a href="https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584"&gt;https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584&lt;/a&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llama.cpp&lt;/b&gt;: b12100 pre-release（11/4）で &lt;code&gt;-hf&lt;/code&gt; タグの量子化名マッチ修正など（&lt;a href="https://newreleases.io/project/github/ggml-org/llama.cpp/release/b12100"&gt;https://newreleases.io/project/github/ggml-org/llama.cpp/release/b12100&lt;/a&gt;）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;b&gt;次に見るべき点&lt;/b&gt;： DeepSeek 552B・3-bit の「92 tok/s」の独立再現。ddalcu の 3.0bpw モデルファイルの公開が待たれていて、他の 256GB オーナーが追試を始めれば「256GB でフロンティア級が実用速度で動く」ことが確定する。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
