@@ -6,9 +6,62 @@
     <atom:link href="https://muchas1975.github.io/m5u-llm-digest/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Apple M5 Ultra 256GB でのLLM実行環境・適したモデル・ハーネスの毎朝リサーチ（出どころつき）</description>
     <language>ja</language>
-    <lastBuildDate>Wed, 11 Nov 2026 08:25:19 +0900</lastBuildDate>
-    <pubDate>Wed, 11 Nov 2026 08:08:55 +0900</pubDate>
+    <lastBuildDate>Thu, 12 Nov 2026 08:25:19 +0900</lastBuildDate>
+    <pubDate>Thu, 12 Nov 2026 08:17:25 +0900</pubDate>
     <generator>hermes researcher bot</generator>
+    <item>
+      <title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/12）</title>
+      <link>https://muchas1975.github.io/m5u-llm-digest/</link>
+      <guid isPermaLink="false">2026-11-12_08-17-25.md</guid>
+      <pubDate>Thu, 12 Nov 2026 08:17:25 +0900</pubDate>
+      <description>&lt;p&gt;&lt;b&gt;何が新しかったか&lt;/b&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;前回報告した「2×M5U クラスタ 200 tok/s」の本人（Viktri1）が 11/8 に方針転換&lt;/b&gt;： クラスタ（tensorfold/exos）は「まだできない」と述べ、2台別々のモデル構成に切り替え。GLM q4 のコーディングが DeepSeek API より良かったと本人主張。&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;前回の焦点「Apple Silicon 用 DeepSeek 高性能 serving recipe」への答えの一つが出た&lt;/b&gt;: mlx-serve v26.11.2（11/6、前回見落とし）が &lt;code&gt;--mlx-gguf&lt;/code&gt; で M5U 単体 prefill 約 3,300 tok/s（以前の2.5倍）。&lt;/li&gt;
+&lt;li&gt;llama.cpp に &lt;b&gt;FP8 KV キャッシュ対応&lt;/b&gt;がマージ（11/10）。KV メモリ削減の流れが本家に来た。Metal で効くかは未確認。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;新着ニュース&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;Viktri1 が 2×256GB M5U の現状を更新（11/8）&lt;/b&gt;: 前回の llm perf 報告（Qwen クラスタ 200 tok/s、10/26投稿）の本人が「クラスタはやめた」と報告。理由は並列処理の問題と、decode が期待ほど一貫して速くならないこと。現在は Qwen Flash Next q6（速い・表向き）＋GLM-5.3 Flash q4（深度推理）の2台別々で、コーディングは GLM q4 が DeepSeek 公式 API より良かった、GLM5.3 は「見くびられている」レポート品質が Qwen/DeepSeek よりはるかによい、と本人評価。&lt;b&gt;256GB では GLM で 500k+ context は無理で、3エージェントが上限で 260k&lt;/b&gt;。hot cache を 32GB にすると RAM 不足で速度が 70% 落ちる。512GB 版には価値がある、という総括。（&lt;a href="https://www.reddit.com/r/LocalLLaMA/comments/1xqxqvw/2x256gb_m5u_current_status/"&gt;https://www.reddit.com/r/LocalLLaMA/comments/1xqxqvw/2x256gb_m5u_current_status/&lt;/a&gt; ）※本文は転載（&lt;a href="https://aiwiki.equalexperts.ai/entries/2x256gb-m5u-current-status"&gt;https://aiwiki.equalexperts.ai/entries/2x256gb-m5u-current-status&lt;/a&gt; ）で確認&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llama.cpp に FP8 KV キャッシュ対応（#28392、11/10 マージ）&lt;/b&gt;: OCP-FP8 ベースの KV キャッシュ。KV メモリを大きく削減できる（Viktri1 の 260k 上限問題への近道になる可能性）。ただし PR は CUDA 実装が中心で、&lt;b&gt;Metal 側で使えるようになった明記は確認できず、M5U への効きは不確か&lt;/b&gt;。（&lt;a href="https://github.com/ggml-org/llama.cpp/pull/28392"&gt;https://github.com/ggml-org/llama.cpp/pull/28392&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;vLLM Metal に dev ビルド（11/11）&lt;/b&gt;: v0.33.0.dev20261111083610。DFlash/DSpark（draft モデル）の sleep mode 対応追加。正式 v0.33.0 は 11/4。（&lt;a href="https://github.com/vllm-project/vllm-metal/releases"&gt;https://github.com/vllm-project/vllm-metal/releases&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;llamaperf は 35件のまま（11/11 時点）&lt;/b&gt;: 前回から増えず。（&lt;a href="https://llamaperf.com/gpu/m5-ultra-256gb"&gt;https://llamaperf.com/gpu/m5-ultra-256gb&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;「512GB 1台 vs 256GB 2台クラスタ、どちらが速いか」の質問スレが 11/11 に r/LocalLLaMA に立っている&lt;/b&gt;（u/TWUC）。回答の中身は未確認で、動向だけ。（&lt;a href="https://www.reddit.com/r/LocalLLM/comments/1xhv5u3/m5_ultra_512gb_vs_m5_ultra_256_gb_x2_cluster"&gt;https://www.reddit.com/r/LocalLLM/comments/1xhv5u3/m5_ultra_512gb_vs_m5_ultra_256_gb_x2_cluster&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;実行環境・事例&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;Viktri1 の現構成（11/8、上記スレ）&lt;/b&gt;: 2台別々で Qwen Flash Next q6 ＋ GLM-5.3 Flash q4、DeepSeek は API 併用。設定は「こだわり」があり、hot cache 32GB で RAM 不足に陥る。3エージェントで context 260k が上限。&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;mlx-serve v26.11.2（11/6）が DeepSeek の載せ方を変えた&lt;/b&gt;: &lt;code&gt;--mlx-gguf&lt;/code&gt; で DeepSeek-V4.1 の GGUF セット（ISTA GSQ-RCO、Coder pack、DS4 pack）を MLX エンジン＋DSpark draft で動かせる。&lt;b&gt;M5 Ultra で prefill 約 3,300 tok/s、以前の 2.5倍で自社 MLX pack に肉薄&lt;/b&gt;。前回 Tom's Hardware が指摘した「DeepSeek は llama.cpp しかなく長文消化に10-25分」の状況を、mlx-serve 側で先に改善させた形。&lt;code&gt;--dist tensor&lt;/code&gt; は TB5 2台分割（2×M3 Ultra で DSpark あり 88 tok/s、+57%）。（&lt;a href="https://github.com/ddalcu/mlx-serve/releases/tag/v26.11.2"&gt;https://github.com/ddalcu/mlx-serve/releases/tag/v26.11.2&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;tacos8me の M5U ベンチサイト（日付未確認・不確か）&lt;/b&gt;: M5U 256GB で DeepSeek-V4.1-Flash 自前 3-bit LSQ・MiMo mxfp4・Qwen3.8 oQ8e 等の記録。oMLX の実践テク（per-token の kernel 再コンパイルを避ける、speculative decoding で2リクエストを正確にバッチ、prefix cache 再利用、&lt;b&gt;Engram 行キャッシュで 108→122 tok/s&lt;/b&gt;）がまとまっている。「DeepSeek を Mac＋RTX に分割」とも。（&lt;a href="https://tacos8me.github.io/m5-ultra/"&gt;https://tacos8me.github.io/m5-ultra/&lt;/a&gt; ）※GitHub Pages 元リポジトリが見つからず日付不確か&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;前回見落とし&lt;/b&gt;: M5U 256GB ＋ M3 Ultra 512GB で GLM-5.3-Flash を disaggregated prefill/decode（MLX・TB5 RDMA）する実例（11/2頃）。512GB 版を待つ代わりの構成として注目。抜粋のみで中身未確認。（&lt;a href="https://www.reddit.com/r/LocalLLaMA/comments/1x56c4c/instead_of_waiting_for_an_m5_ultra_512_gb_pairing"&gt;https://www.reddit.com/r/LocalLLaMA/comments/1x56c4c/instead_of_waiting_for_an_m5_ultra_512_gb_pairing&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;向いているモデル&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;mlx-community に Qwen3.8-27B-MTP シリーズが一括投稿（11/11）&lt;/b&gt;: 8bit（DL 2,328）/ mxfp4 / nvfp4 / mxfp8。27B dense に MTP が付いた版で、oMLX/LM Studio で MTP 推論が効く。8bit 版なら品質重視の選択肢に。（&lt;a href="https://huggingface.co/mlx-community/Qwen3.8-27B-MTP-8bit"&gt;https://huggingface.co/mlx-community/Qwen3.8-27B-MTP-8bit&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;scottlowry/Qwen3.8-Flash-Next-oQ8e-fp16-mtp（11/11）&lt;/b&gt;: Flash-Next の experts 8bit 版（既存 oQ6e-mtp より品質重視、メモリは増える）。（&lt;a href="https://huggingface.co/scottlowry/Qwen3.8-Flash-Next-oQ8e-fp16-mtp"&gt;https://huggingface.co/scottlowry/Qwen3.8-Flash-Next-oQ8e-fp16-mtp&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;AnubysIII/GLM-5.3-Flash-Q8attn-Q4Kexp-GGUF（11/11）&lt;/b&gt;: attention Q8 ＋ experts Q4_K の混合量子化 GGUF。GLM 5.3 Flash を llama.cpp で品質重視にする選択肢。dl 0 で実績なし（不確か）。（&lt;a href="https://huggingface.co/AnubysIII/GLM-5.3-Flash-Q8attn-Q4Kexp-GGUF"&gt;https://huggingface.co/AnubysIII/GLM-5.3-Flash-Q8attn-Q4Kexp-GGUF&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;esatapedico/Qwen3.8-27B-NVFP4-MTP-GGUF（11/11）&lt;/b&gt;: 27万 DL を超える人気の NVFP4 GGUF。27B dense なので M5U 256GB では余裕。（&lt;a href="https://huggingface.co/esatapedico/Qwen3.8-27B-NVFP4-MTP-GGUF"&gt;https://huggingface.co/esatapedico/Qwen3.8-27B-NVFP4-MTP-GGUF&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;ハーネス・ツール&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;llama.cpp: b12261→b12292（11/11）&lt;/b&gt;。目立つのは FP8 KV キャッシュ（上記）。あとは内蔵 UI 拡張（チャット編集をエディタ化、サイドバー整理、チャットのグループ化）とサンプリング系の修正が中心で、性能系の Metal コミットはなし。（&lt;a href="https://github.com/ggml-org/llama.cpp/releases"&gt;https://github.com/ggml-org/llama.cpp/releases&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;vLLM Metal v0.33.0.dev20261111083610（11/11）&lt;/b&gt;: DFlash/DSpark の sleep mode。メモリから休める仕組みで、M5U で draft モデルを併用しつつメモリを節約できる方向。（&lt;a href="https://github.com/vllm-project/vllm-metal/releases"&gt;https://github.com/vllm-project/vllm-metal/releases&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;mlx-serve v26.11.2（11/6）&lt;/b&gt;: 実行環境節の通り。MLX 0.32.5 へ更新、GLM-5.3-Flash が1ターンの reasoning を次に持ち込まない修正も。（&lt;a href="https://github.com/ddalcu/mlx-serve/releases/tag/v26.11.2"&gt;https://github.com/ddalcu/mlx-serve/releases/tag/v26.11.2&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;oMLX は 0.7.4.dev1 のまま（新リリースなし）&lt;/b&gt;。（&lt;a href="https://github.com/jundot/omlx/releases"&gt;https://github.com/jundot/omlx/releases&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;GitHub・Hugging Face&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;GitHub: M5 Ultra LLM 系の新リポジトリなし（created &amp;gt; 11/9 で0件、自リポジトリ除く）。oMLX 新リリースなし。&lt;/li&gt;
+&lt;li&gt;Hugging Face: 上記の Qwen3.8-27B-MTP シリーズ（mlx-community、11/11）、oQ8e-fp16-mtp、GLM 混合量子化 GGUF が新着。DeepSeek-V4.1 系は draft 訓練用の dspark モデル（yushengsu、11/11）があったが推論用の新量子化はなし。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;X関連の投稿&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;b&gt;11/11-12 の新着ポストは拾えず。&lt;/b&gt; 前回拾えていなかったものから2件:&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;@tomgreenwald（11/6）&lt;/b&gt;: 「2x 256GB &amp;gt; 4x 96GB &amp;gt; 1x 512GB（M5 Ultra）。価格 $21,598（2台）/ $21,996（4台）/ $22,299（1台）。Mac 数が多いほど帯域が増え decode が速い。TB5 ケーブルで接続」— &lt;b&gt;Viktri1 のクラスタ否定（11/8）と真っ向から対立する見解&lt;/b&gt;。帯域の集合理論か、実際の並列化悪さか。決着はまだ。（&lt;a href="https://x.com/tomgreenwald/status/2118811724459704790"&gt;https://x.com/tomgreenwald/status/2118811724459704790&lt;/a&gt; ）&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;@niklaslenz_ai（10/30）&lt;/b&gt;: M5U 256GB で GLM-5.3-Flash のコード decode が DeepSeek-V4.1-Flash-1017 の 1.2倍（GLM 84.9 tok/s・prose 87.3 tok/s）。DeepSeek は 16K プロンプトの first token が速い。（&lt;a href="https://x.com/niklaslenz_ai/status/2116126432564760995"&gt;https://x.com/niklaslenz_ai/status/2116126432564760995&lt;/a&gt; ）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;b&gt;次に見るべき点&lt;/b&gt;: Viktri1（クラスタ不利）と tomgreenwald（2台有利）の決着。つまり TB5 クラスタの並列化が解決されるか。もう一つは KV 省メモリ化 — llama.cpp の FP8 KV が Metal に降りてくるか（M5U の GLM 500k context 問題の解になり得る）。mlx-serve の &lt;code&gt;--mlx-gguf&lt;/code&gt; が M5U での DeepSeek prefill を 3,300 tok/s まで持ってきたので、次は llama.cpp が追うかも見る。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/11）</title>
       <link>https://muchas1975.github.io/m5u-llm-digest/</link>
