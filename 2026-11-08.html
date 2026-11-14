@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/8）</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a1a}
+a{color:#0a66c2;word-break:break-all}
+code{background:#f4f4f5;padding:0 .2em;border-radius:4px;font-size:.92em}
+h2{border-bottom:1px solid #ddd;padding-bottom:.3em;margin-top:2em}
+.home{display:inline-block;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">← 一覧へ戻る</a>
+<p>2026-11-08 08:04 JST</p>
+<p><b>何が新しかったか</b></p>
+<ul>
+<li>llamaperf の追試レポートが<b>33件→34件</b>に動き出し、DeepSeek 552B（3-bit）のメディアン <b>73.4 tok/s</b> が公式数字として載った。</li>
+<li>件数以上に中身が増えていて、<b>2台クラスタなら 200 tok/s</b>、逆に <b>4-bit DeepSeek は1台だと 20-25 tok/s に落ちる</b>、という両極の実測が読めた。</li>
+<li>LM Studio と llama.cpp に小さな更新（どちらも M5U 直結の数字はまだなし）。</li>
+</ul>
+<h3>新着ニュース</h3>
+<ul>
+<li><b>llamaperf が 33→34 件に</b>（as of 7 Nov）。前回「33 のまま」だった追試レポートがようやく +1。件数の伸びはまだ1日1件ペースだが、DeepSeek V4.1 Flash 552B・16B active の 3-bit で <b>median 73.4 tok/s</b> が集計として出た。エンジン内訳は oMLX 16件・MLX 7件・llama.cpp 3件など（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a>）</li>
+<li><b>llama.cpp b12191（11/7）</b>: MoE キャッシュで逃した expert を <b>CPU 側で計算する</b>機能（<code>--moe-cache-cpu-share</code>）と、最適値を推測してくれる <code>moe-cache-tune.py</code> スクリプトが入った。256GB で MoE 大モデルのキャッシュが足りないときに効く仕組みだが、M5U での実測数字はまだ報告されていない（<a href="https://github.com/ggml-org/llama.cpp/releases">https://github.com/ggml-org/llama.cpp/releases</a>）</li>
+</ul>
+<h3>実行環境・事例</h3>
+<p>（llamaperf のレポート一覧の中身は今回初めて確認できたもの。各レポートに日付表記はないので「34件の中の1つ」までの正確さ）</p>
+<ul>
+<li><b>2×M5U 256GB クラスタで 200 tok/s</b>: Thunderbolt 5 ケーブル2本でつなぎ、Tensorfold の公式ガイド通りに <b>DeepSeek 側がセットアップまで代行</b>してくれたという報告。Qwen3.8 Flash-Next（Q6）で decode 200 tok/s・prefill 8,000 tok/s。同じクラスタの GLM-5.3-Flash は 50 tok/s で「遅すぎる」と不評。ハーネスは Hermes を使っていて「軽いハーネスなら速くなるか」と質問つき（<a href="https://llamaperf.com/gpu/m5-ultra-256gb/reports">https://llamaperf.com/gpu/m5-ultra-256gb/reports</a>）</li>
+<li><b>4-bit DeepSeek は1台だと載りきらない</b>: oQ4e だと MoE expert を 65% SSD に逃がす必要があり decode <b>20-25 tok/s</b>・prefill 500 tok/s（メモリ使用量は最大 203.6GB）。「3-bit で 73-100 tok/s」より全然遅いので、<b>256GB 単体の実用線は 3-bit 相当まで</b>という裏付けになった（同上）</li>
+<li><b>GLM-5.3-Flash を llama.cpp で 61 tok/s</b>: 内蔵 MTP ヘッドの確率的 draft（3トークン）を使った値で、MTP off だと 39.7 tok/s。<b>262K コンテキストが全部入りで 15GiB 余る</b>。ただし deep context に未マージの修正が必要という注意つき（同上）</li>
+<li><b>M5U 256GB（prefill）+ M3 Ultra 512GB（decode）の分割構成</b>: JACCL RDMA（TB5×2）で前段と後段を分け、35万トークン級の KV ハンドオフが 38ms。first token が 18.5秒（1台だと40秒相当の計算）。ただし「prefill 側に全モデルが必要なので、載るのは 256GB に収まるモデル限定」と考察つき（同上）</li>
+<li><b>DeepSeek 552B Q4 + SSD Engram の動画（11/5）</b>: 「M5U 256GB で Q4 を SSD Engram で、DGX Spark クラスタと比較」という動画が上がっている。ページが JS 動画で<b>中身は確認できず不確か</b>（<a href="https://divert.stream/watch/TCZtDI2K1nY">https://divert.stream/watch/TCZtDI2K1nY</a>）</li>
+</ul>
+<h3>向いているモデル</h3>
+<ul>
+<li><b>Qwen3.5 122B-A10B（4-bit）が 74.7 tok/s・prefill 2,710 tok/s</b>: DeepSeek 552B 3-bit（73.4 tok/s）とほぼ同じ速度で、メモリ余裕は 72.3GB 使用と軽い。「73 tok/s 以上欲しいなら Qwen3.5 のほうが楽」という比較材料（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a>）</li>
+<li><b>Meta の Muse Spark Open（10/15、前回未報告）</b>: 総 816B・42B active の MoE モデル。4-bit でも約 493GB なので 512GB 1台にも載らず、<b>M5U 512GB 2台の tensor parallel で 25 tok/s、4台で 37 tok/s</b>（Apple 公布の MLX ベンチ）。256GB 単体では動かないが、「M5U を複数台つなげばフロンティア級も動く」ことの公式裏付け（<a href="https://www.iclarified.com/102861/meta-releases-muse-spark-open-ai-optimized-for-mac-studio">https://www.iclarified.com/102861/meta-releases-muse-spark-open-ai-optimized-for-mac-studio</a>）</li>
+</ul>
+<h3>ハーネス・ツール</h3>
+<ul>
+<li><b>LM Studio Bionic 1.2.0（11/5）</b>: 前回書いた oMLX エンジン搭載（1.1.10）の次。<b>oMLX 0.1.0 エンジン</b>と llama.cpp 2.67.0 拡張パックに更新。実測数字なし（<a href="https://lmstudio.ai/changelog">https://lmstudio.ai/changelog</a>）</li>
+<li><b>oMLX は 0.7.4.dev1（11/4）のまま更新なし</b>。前回の Prefill Accelerator が現時点で最新（<a href="https://github.com/jundot/omlx/releases">https://github.com/jundot/omlx/releases</a>）</li>
+</ul>
+<p><b>次に見るべき点</b>: llamaperf のレポート件数が 34 から伸びるか（6→7 Nov は +1）。伸び始めると「256GB で 552B が 73 tok/s」が個人の実績から集計に変わる。</p>
+</body>
+</html>

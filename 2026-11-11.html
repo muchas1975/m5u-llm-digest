@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/11）</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a1a}
+a{color:#0a66c2;word-break:break-all}
+code{background:#f4f4f5;padding:0 .2em;border-radius:4px;font-size:.92em}
+h2{border-bottom:1px solid #ddd;padding-bottom:.3em;margin-top:2em}
+.home{display:inline-block;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">← 一覧へ戻る</a>
+<p>2026-11-11 08:08 JST</p>
+<p><b>何が新しかったか</b></p>
+<ul>
+<li><b>Tom's Hardware が M5U 256GB vs DGX Spark の大型実測記事（11/10）</b>。エージェント負荷では Mac Studio が単体 Spark の半分以下の時間・16%省エネ。GLM は TensorFold レシピで decode 平均3倍、DeepSeek V4.1 は現状 Spark 2台クラスタが優位、と結論。</li>
+<li><b>oMLX 公式ベンチに M5U 64コアの GLM-5.3-Flash 実測（11/10投稿）</b>。128k 入力でも PP 1,879 tok/s・TG 117 tok/s が並んだ。</li>
+<li><b>llamaperf が34→35件に更新</b>。llama.cpp v0.9.0 は実在を確認（前回「不確か」→確定）。</li>
+</ul>
+<h3>新着ニュース</h3>
+<ul>
+<li><b>Tom's Hardware 深掘り記事（11/10）</b>: Artificial Analysis の AgentPerf-Local（エージェント系負荷）で、$12,300の M5U Mac Studio が $10,000の Dell GB10（DGX Spark互換）1台の<b>半分以下の時間</b>で完走、消費エネルギーも<b>約16%少ない</b>、EDPは半分以下（Qwen3.8 27B・MTP有効・llama.cpp で比較）。大型モデルでは、GLM 5.3 Flash は <b>TensorFold の serving レシピで decode が平均3倍</b>・PP も Spark クラスタに肉薄、一方 DeepSeek V4.1 Flash 1017 は Apple Silicon では llama.cpp しか選択肢がなく、 draft モデルも載せられないので長文消化に10-25分（Spark 2台クラスタ＋TensorFold なら5分未満）で「現状は Spark 2台が明確に有利」。（<a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/going-deep-on-local-ai-performance-with-apples-mac-studio-with-m5-ultra-inference-engine-recipes-mandatory-for-bigger-models-as-mlx-stack-matures">https://www.tomshardware.com/tech-industry/artificial-intelligence/going-deep-on-local-ai-performance-with-apples-mac-studio-with-m5-ultra-inference-engine-recipes-mandatory-for-bigger-models-as-mlx-stack-matures</a> ）※なお同記事で高評価の TensorFold は、うちのメインモデルと同じ TensorFold の GLM-5.3-Flash。レシピ次第で decode 3倍という数字は自分の環境にもそのまま効く話</li>
+<li><b>M5U の納期が伸びている</b>: 同記事でリードタイム「13-15週、2027年2月まで」と報告（11/10時点）。前回の「512GB 11月末〜12月初旬」という報道から大きく後ろ倒し。購入検討なら直近の Apple Store 表記を自分で確認するのが確実</li>
+<li><b>llamaperf 35件（11/10時点、+1件）</b>: 最頻モデル DeepSeek V4.1 Flash 3-bit の中央値 73.4 tok/s・PP 1,010。エンジン内訳は oMLX 16 / MLX 7 / llama.cpp 3 / LM Studio 1 で、<b>M5U 256GB では llama.cpp を使う報告自体が少ない</b>（Tom's の「DeepSeek は llama.cpp だと遅い」と整合）。（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a> ）</li>
+<li><b>国内 note で「512GB 1台 vs 256GB 2台」の比較（10/29）</b>: 差額約207万円（記載ベース）。2台構成は「速くはなるが2倍にはならない」、運用手間を踏まえると 512GB 1台、という整理。（<a href="https://note.com/daikidomon/n/n8dd4bd0d7fae">https://note.com/daikidomon/n/n8dd4bd0d7fae</a> ）</li>
+</ul>
+<h3>実行環境・事例</h3>
+<ul>
+<li><b>2× M5U 256GB クラスタの新報告（llamaperf）</b>: 80コア機2台を Thunderbolt 5 2本で繋ぎ TensorFold の Q6 で Qwen3.8 Flash-Next → <b>200 tok/s decode・8,000 tok/s prefill</b>。同じクラスタで GLM 5.3 Flash は 50 tok/s と「遅すぎ」。ハーネスは Hermes を使っている、と記載あり。（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a> ）</li>
+<li><b>Qwen3.8 Flash-Next Uncensored oQ5e＋MTP</b>: 4K プロンプトで <b>239.3 tok/s decode・4,316 tok/s prefill</b>、ピークメモリ 122.9GB。16K で 155 tok/s、64K で 127 tok/s まで落ちる。（同上）</li>
+<li><b>GLM の実速がレシピ差で開く実例</b>: 64コア機で oMLX 0.7.3rc1・oQ4e・MTP/DFlash2 と設定を試しても 80-90 tok/s で「oMLX 公式レシピの 140-150 に届かない」という報告と、次節の oMLX 公式ベンチ 117 tok/s が同居。<b>ハードよりレシピ・設定差が効いている</b>。（同上）</li>
+</ul>
+<h3>向いているモデル</h3>
+<ul>
+<li><b>GLM-5.3-Flash oQ4e（oMLX 公式ベンチ、11/10投稿）</b>: M5 Ultra 64コア・256GB・oMLX 0.7.3・DFlash（draft 4bit）＋TurboQuant KV 6bit、Code 文脈で <b>PP 1,347-1,954 tok/s（1k〜128k ほぼ横ばい）・TG 65.9-118.8 tok/s・ピークメモリ約173GB</b>。バッチ4で TG 82.8。（<a href="https://omlx.ai/benchmarks/performance/elm55in6">https://omlx.ai/benchmarks/performance/elm55in6</a> ）</li>
+<li><b>Qwen3.5 122B（10B active）4-bit</b>: 74.7 tok/s・PP 2,710 tok/s で llamaperf の上位3モデルに新規入り。（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a> ）</li>
+<li><b>Kimi-K3.1-Pro</b>: llama.cpp がテキスト対応をマージ（11/6、MLA層をDSAに置き換えた K3 後継）。KarLexAI の 1-2bit GGUF も出ている（11/8）。<b>256GB に載るサイズかは未確認（不確か）</b>。（<a href="https://huggingface.co/KarLexAI/Kimi-K3.1-Pro-GGUF">https://huggingface.co/KarLexAI/Kimi-K3.1-Pro-GGUF</a> ）</li>
+<li><b>ISTA-DASLab の Qwen3.8-Flash-Next GSQ-RCO Q2_0</b>: splash 実測 154.3 tok/s（11/5）。2bit でも 150 tok/s 台が出る量子化が増えている。（<a href="https://llm-bench.io/benchmarks/cmw34iff6042c01la1pf6b7tn">https://llm-bench.io/benchmarks/cmw34iff6042c01la1pf6b7tn</a> ）</li>
+</ul>
+<h3>ハーネス・ツール</h3>
+<ul>
+<li><b>llama.cpp v0.9.0 が実在確認できた（11/4、前回不確か→確定）</b>: OCP FP8 E4M3 量子化、<code>flash_attn_ext_rows</code>（マルチシーケンスの統合 KV で効く）、バッチ tensor copy API、新アーキ4種、Gemma 4 E2B/E4B の prefill 最適化、ggml v0.29.0（NCCL マルチノード TP）。（<a href="https://github.com/ggml-org/llama.cpp/releases/tag/v0.9.0">https://github.com/ggml-org/llama.cpp/releases/tag/v0.9.0</a> ）</li>
+<li>llama.cpp は b12261（11/10夜）まで進行。11/8 の top-k 以降に目立つ性能コミットなし（サンプリング系の修正など）。前回見落とし分として、11/5 に <b>DeepSeek-V4/V4.1 と GLM の MoE ルーティングを Metal で fusion</b> する最適化（#31615）が入っている。（<a href="https://github.com/ggml-org/llama.cpp/releases">https://github.com/ggml-org/llama.cpp/releases</a> ）</li>
+<li><b>oMLX は新リリースなし</b>（0.7.4.dev1 が最新、既報）。（<a href="https://github.com/jundot/omlx/releases">https://github.com/jundot/omlx/releases</a> ）</li>
+<li><b>LM Studio に oMLX エンジンが載った（10/29、公式X）</b>: 既存の MLX モデルがそのまま使える。LM Studio 本体は 0.4.28 のまま。（<a href="https://x.com/lmstudio/status/2115829031832830252">https://x.com/lmstudio/status/2115829031832830252</a> ）</li>
+<li>トラッカー（aisoku.org）: llama.cpp b12255（11/10）、Ollama v0.40.16（11/10）、vLLM v0.34.0rc0（11/9）。（<a href="https://aisoku.org/releases/">https://aisoku.org/releases/</a> ）</li>
+</ul>
+<h3>GitHub・Hugging Face</h3>
+<ul>
+<li>GitHub: M5U 系の新リポジトリなし（自リポジトリ除く）。oMLX 新リリースなし。</li>
+<li>Hugging Face: 大型モデルの新 MLX 量子化は少なめ。目立ったのは mlx-community/<b>Qwen3.8-27B-oQ3.5e-mtp</b>（11/10、<a href="https://huggingface.co/mlx-community/Qwen3.8-27B-oQ3.5e-mtp">https://huggingface.co/mlx-community/Qwen3.8-27B-oQ3.5e-mtp</a> ）と、GLM では vLLM 系の <b>RedHatAI/GLM-5.3-Flash-speculator.dspark</b>（draft モデル、618 DL、<a href="https://huggingface.co/RedHatAI/GLM-5.3-Flash-speculator.dspark">https://huggingface.co/RedHatAI/GLM-5.3-Flash-speculator.dspark</a> ）。M5U 直結の新量子化はなし。</li>
+</ul>
+<h3>X関連の投稿</h3>
+<ul>
+<li>@lmstudio（10/29）: oMLX エンジンを LM Studio に追加。jundotkim・Hugging Face と連携して実現。（<a href="https://x.com/lmstudio/status/2115829031832830252">https://x.com/lmstudio/status/2115829031832830252</a> ）</li>
+<li>@ivanfioravanti（11/4）: oMLX 0.7.4.dev1 の「2台目 Mac で prefill 加速」を実測、あるモデル +157%、MiniMax M3.1 が 297→569 tok/s（+92%）。機種構成は抜粋のみなので断定しない。（<a href="https://x.com/ivanfioravanti/status/2117932394783129638">https://x.com/ivanfioravanti/status/2117932394783129638</a> ）</li>
+<li>@ivanfioravanti（10/18）: M5U vs Spark×2 で「decode はメモリ律速だけではない。Apple Silicon 側カーネルの計算が効き、並列時はさらに」。前回の「MiMo が帯域比を出さない」話の説明になる内容。（<a href="https://x.com/ivanfioravanti/status/2111864383483609505">https://x.com/ivanfioravanti/status/2111864383483609505</a> ）</li>
+<li>11/10-11 の M5U 関連新着ポストは拾えず。</li>
+</ul>
+<p><b>次に見るべき点</b>: Tom's が明示した「Apple Silicon 用 DeepSeek V4.1 Flash 1017 の高性能 serving recipe」の登場有無。TensorFold・oMLX が DeepSeek 対応レシピを出せば、M5U 256GB 単体で Spark クラスタ対抗が現実的になる。llamaperf が35件から増えるかもあわせて。</p>
+</body>
+</html>

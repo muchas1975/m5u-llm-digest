@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/9）</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a1a}
+a{color:#0a66c2;word-break:break-all}
+code{background:#f4f4f5;padding:0 .2em;border-radius:4px;font-size:.92em}
+h2{border-bottom:1px solid #ddd;padding-bottom:.3em;margin-top:2em}
+.home{display:inline-block;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">← 一覧へ戻る</a>
+<p>2026-11-09 08:06 JST</p>
+<p><b>何が新しかったか</b></p>
+<ul>
+<li><b>512GB M5U が 10/28 に発注開始</b>。$22,299〜、納期は11月末〜12月初旬。</li>
+<li>llama.cpp が週末に2リリース進み、<b>M5U で top-k が20-45%速くなる最適化</b>が入った。</li>
+<li>国内で <b>Claude Code × ローカルLLM の実案件検証</b>が出た（GLM-5.3-Flash は完走すれば品質同等だが4-15倍遅い、という結論）。</li>
+</ul>
+<h3>新着ニュース</h3>
+<ul>
+<li><b>512GB M5U の発注が始まった（10/28）</b>: 最低 $22,299、16TB SSD にすると $29,799。納期は11月末〜12月初旬との報道あり。512GB は 36コアCPU/80コアGPU のみで、256GB からの追加は $11,500（<a href="https://www.techrepublic.com/article/news-apple-mac-studio-512gb-ram-price-specs/">https://www.techrepublic.com/article/news-apple-mac-studio-512gb-ram-price-specs/</a> 、納期は <a href="https://mezha.net/eng/news/39a0d4a9_apple_prices_512gb_mac/">https://mezha.net/eng/news/39a0d4a9_apple_prices_512gb_mac/</a> ）。メモリアップの $15,500 は M3 Ultra 2025年当時の同ステップの <b>1GB あたり約3.9倍の単価</b>（PCメモリ高騰に沿った水準）（<a href="https://www.techradar.com/pro/apple-will-now-sell-you-a-mac-studio-with-512gb-of-ram-but-itll-cost-you-as-much-as-a-good-sized-family-car">https://www.techradar.com/pro/apple-will-now-sell-you-a-mac-studio-with-512gb-of-ram-but-itll-cost-you-as-much-as-a-good-sized-family-car</a> ）</li>
+<li><b>llama.cpp b12202（11/8）→ b12208</b>: M5 Ultra 上で top-k を <b>20-45% 高速化</b>する Metal 最適化（atomic ループを連続パスに変える）。コミットの支援クレジットに「GLM-5.3-Flash-GGUF (Mac Studio, M5 Ultra, 256GB)」の署名が付き、<b>M5U で実際に動かしているコミュニティが llama.cpp 本体の改善に食い込んでいる</b>のが分かる（<a href="https://github.com/ggml-org/llama.cpp/releases/">https://github.com/ggml-org/llama.cpp/releases/</a> ）</li>
+<li><b>llamaperf の件数は止まった模様</b>: 前回「34件（as of 7 Nov）」の後、今日のスニペットも「34件・as of 8 Nov」のまま。ただしページを直接読むと古いキャッシュ（32件・as of 5 Nov）が返ってきたので、正確な件数は断定できない（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a> ）</li>
+</ul>
+<h3>実行環境・事例</h3>
+<ul>
+<li><b>Claude Code の開発ワーカーにローカルLLMを混ぜる実案件検証（11/3、日本語）</b>: Rails のマージ済み PR 18件を題材に、M5U 256GB（64コアGPU）で測定。結論は、<b>Sonnet 単独が一番速く安い</b>（16/18合格・199件/h・$0.36）、GLM-5.3-Flash 単独は同品質（16/18）だが13件/h で 1/15、<b>「Claudeが仕様整理→ローカルが実装→Claudeがレビュー」の分業は費用2-4倍・処理量1/20で割に合わない</b>。技術メモとして: mlx-vlm だと 3.8 tok/s だった GLM が oMLX+MTP で 69-73 tok/s（実行系で20倍差）、Claude Code 経由でも oMLX のプレフィックスキャッシュ命中率 98.9% で prefill は詰まない、GLM は「ターン数の使い切り」で落ちやすい（<a href="https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/">https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/</a> ）。<b>注意点</b>： macOS の動く壁紙（Aerial）がデコードサービスのメモリを10時間で104GBまで膨らませ、GLM のロードが落ちたという報告が記事内にある。静止画に変えると22MBに戻る。256GB 機ではモデルロード前に常駐プロセスの確認が要る（同上）</li>
+<li><b>NetworkChuck の M5U vs M3U 実測リポジトリ</b>（前回未報告）: 同一モデル・同一設定で、Qwen3.8 27B の 32K プロンプト読みが <b>388→1,526 tok/s（3.9倍）</b>、生成 27.8→42.6（1.5倍）、初トークン 83.6秒→21.3秒。画像生成 FLUX.2 klein 4B が 7.00秒→1.77秒。「読みは4倍、書きは1.5倍」の構図を公式スペック根拠つきで整理したもの。Hermes agent を 27B で回して 89秒、というエージェント実測も載っている（<a href="https://github.com/theNetworkChuck/mac-studio-m5-ultra-local-ai">https://github.com/theNetworkChuck/mac-studio-m5-ultra-local-ai</a> ）</li>
+<li><b>1M コンテキストの個人実測（前回未報告）</b>: DeepSeek-V4.1-Flash 自作 3-bit で、130K prefill 2,545 tok/s、<b>1M prefill 1,998 tok/s（521秒）</b>。会話再開時は prefix cache で 128K を0.8秒（従来53秒）。なお RTX PRO 6000 ×2 を並べると同じ 130K が 9,724 tok/s になる比較表付き（<a href="https://tacos8me.github.io/m5-ultra/">https://tacos8me.github.io/m5-ultra/</a> ）</li>
+</ul>
+<h3>向いているモデル</h3>
+<ul>
+<li><b>MiMo-V2.6-Flash が帯域比を示さない実例（llmcheck 更新）</b>: M5U 80コアで 61.7 tok/s に対し、M3 Ultra の3実測は 55.1-59.4 tok/s で<b>差は4-12%しか付かない</b>（帯域比1.5倍に遠い）。この実測を機に llmcheck のインデックス1位は Qwen 3.6-35B-A3B に交代（<a href="https://llmcheck.net/blog/m5-ultra-vs-m3-ultra-vs-m5-max-local-llm/">https://llmcheck.net/blog/m5-ultra-vs-m3-ultra-vs-m5-max-local-llm/</a> ）</li>
+<li>ボヘミアンシリコン（レンタル機）の6モデル表が同記事経由で読める： GPT-oss 20B 184 tok/s、Qwen3.5 9B 167、GPT-oss 120B 120、Gemma 4 31B 31（mlx-lm 0.32）（同上）</li>
+<li>512GB を検討する場合の参考： DeepSeek-V4.1-Flash の 3-bit（381GB）なら 512GB（実質409GB）に完全搭載可能、と vdf.ai のガイドが整理（<a href="https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/">https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/</a> ）</li>
+</ul>
+<h3>ハーネス・ツール</h3>
+<ul>
+<li><b>oMLX 0.7.3 安定版（10/31）の中身</b>（前回は 0.7.4.dev1 の話のみだったので整理）: DeepSeek V4.1 Flash に INT8 Activation Prefill を追加し、64K prefill が <b>2,882→3,507 tok/s（+22%）</b>、195K で +29%。Engram prefetch で 128K が +15%。8リクエスト同時で KV キャッシュをその場更新に変え、M3 Ultra の 8ストリーム実測でメモリ -35%・decode +33%（<a href="https://newruntime.com/posts/omlx-0-7-3-speeds-up-deepseek-v4-fd0577/">https://newruntime.com/posts/omlx-0-7-3-speeds-up-deepseek-v4-fd0577/</a> ）</li>
+<li><b>llama.cpp v0.9.0（11/4、不確か）</b>: dev.to 記事が OCP FP8 量子化、複数シーケンス KV で効く <code>flash_attn_ext_rows</code>、Chatterbox TTS などの内容で報じているが、<b>v0.9.0 タグは GitHub リリース一覧で確認できず</b>（b12202/b12208 が先頭）。報道ベースとしておく（<a href="https://dev.to/madnessbrains_i/llamacpp-090-ships-chatterbox-tts-and-ocp-fp8-local-speech-still-dies-on-the-windows-capture-10n0">https://dev.to/madnessbrains_i/llamacpp-090-ships-chatterbox-tts-and-ocp-fp8-local-speech-still-dies-on-the-windows-capture-10n0</a> ）</li>
+<li>LM Studio 本体は 0.4.28（10/31）が現行、と vdf.ai が整理。M5U 直結の実測数字は相変わらずなし（<a href="https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/">https://vdf.ai/blog/mac-studio-m5-ultra-local-llm/</a> ）</li>
+</ul>
+<p><b>次に見るべき点</b>: b12202/b12208 で入った M5U 固有の最適化が、GLM-5.3-Flash や DeepSeek のコミュニティ実測 tok/s に反映されるか。llamaperf の件数が34から動き出すかもあわせて。</p>
+</body>
+</html>

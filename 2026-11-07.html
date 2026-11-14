@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/7）</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a1a}
+a{color:#0a66c2;word-break:break-all}
+code{background:#f4f4f5;padding:0 .2em;border-radius:4px;font-size:.92em}
+h2{border-bottom:1px solid #ddd;padding-bottom:.3em;margin-top:2em}
+.home{display:inline-block;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">← 一覧へ戻る</a>
+<p>2026-11-07 08:04 JST</p>
+<p><b>何が新しかったか</b></p>
+<ul>
+<li>前回「独立再現待ち」だった DeepSeek 552B の 3-bit に、11/3 に<b>精度93%・decode 100 tok/s の独立データ</b>が出た。</li>
+<li>oMLX 0.7.4.dev1（11/4）が「2台目の Mac を prefill 専門に使う」機能を追加。Thunderbolt／5GbE の接続だけで prefill が最大3倍になった。</li>
+<li>552B を単体 M5U 256GB に載せる実装リポジトリが2件現れ、1M コンテキスト深部の decode 実測も読めた。</li>
+</ul>
+<h3>新着ニュース</h3>
+<ul>
+<li><b>552B・3-bit に独立データ（11/2〜11/3）</b>: rez0__ が 3.0bpw iQ MLX 量子化（MLX-Serve-iQ-MLX-3.0bpw）を 256GB M5 で動かし、<b>精度 93%、decode 100 tok/s、prefill 1500〜1800 tok/s</b> と報告。前回の 92 tok/s（10/31 のコミュニティ情報）と整合する2つ目のデータがついた。※「93%」がどの評価テストかは二次報道の AGI Hunt だけでは確認できず不確か（<a href="https://agihunt.info/en/p/1a19d9b9dcc70bd62cf5e47618d">https://agihunt.info/en/p/1a19d9b9dcc70bd62cf5e47618d</a>）</li>
+<li><b>llamaperf のレポート件数は 33 のまま</b>（6 Nov 時点）。件数ベースの追試レポートはまだ増えていない（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a>）</li>
+</ul>
+<h3>実行環境・事例</h3>
+<ul>
+<li><b>tacos8me の個人ベンチ（9/24 測定、前回調査では見つかっていなかった）</b>: M5U 256GB で DeepSeek-V4.1-Flash を<b>自作 3-bit LSQ</b> で動かすカーネルとパッチを GitHub 公開中。Engram 読みを SSD 並列で先読み、sparse attention と indexer の書き直し、層バッファの再利用など、greedy 出力を bit-identical に保ったまま最適化（Engram キャッシュで 108→122 tok/s）。本体の全数字はグラフで、本文からは読めなかった。<b>追試用の材料がこれで手に入る</b>（<a href="https://tacos8me.github.io/m5-ultra/">https://tacos8me.github.io/m5-ultra/</a> 、カーネルは <a href="https://github.com/tacos8me/m5-ultra/tree/main/kernels">https://github.com/tacos8me/m5-ultra/tree/main/kernels</a>）</li>
+<li><b>Mac + RTX 分割（9/29 測定）</b>: 同じ作者が M5U 256GB に RTX PRO 6000 を2枚 10GbE で繋ぎ、DeepSeek を FP4/FP8 オリジナル重みのまま1モデルとして運用。256GB 単体以外のレーン（<a href="https://tacos8me.github.io/m5-ultra/split/">https://tacos8me.github.io/m5-ultra/split/</a>）</li>
+<li><b>TensorFold の Metal エンジンで単体 256GB（新着リポジトリ）</b>: DeepSeek-V4.1-Flash-1017 を 1M ウィンドウで配信。checkpoint は 418GB でディスク要件 420GB なので SSD ストリーミング前提と読める（推測）。確認できた数字は <b>1M 深部の follow-up が 46.3 tok/s</b>（1サンプル）と品質（GSM8K 245/250、MATH-500 459/500、tools 58/60）。decode 表は省略部分で文脈が切れて断定できない（<a href="https://github.com/BobClawblaw/deepseek-v41-flash-mlx-m5-ultra/blob/main/README.md">https://github.com/BobClawblaw/deepseek-v41-flash-mlx-m5-ultra/blob/main/README.md</a>）</li>
+<li><b>エージェント実験（10/29 完了）</b>: M5 Max 36GB + M5U 96GB の 2台構成で 30タスク、作成は 27/30 一発合格（残り3はリトライで合格）。別の review-only 20件では<b>誤採用0・誤棄却0</b>——ただし間違いは意図的に仕込んだもので、自然な誤り分布ではない。前回の tchikuba 記事の「レビューは品質ゲートにならない」とは正反対の結果が出ている（<a href="https://llmonmac.com/en/agent-practice">https://llmonmac.com/en/agent-practice</a>）</li>
+</ul>
+<h3>向いているモデル</h3>
+<ul>
+<li><b>DeepSeek-V4.1-Flash-1017 oQ2.5e-ngram-mtp</b>（M5U 80c・11/5 の oMLX ベンチ）: 64k プロンプトで PP 3,252／TG 89.4 tok/s。軽い量子化（2.5-bit 相当）でも 89 tok/s 出る（<a href="https://omlx.ai/benchmarks/performance/c7s9yopm">https://omlx.ai/benchmarks/performance/c7s9yopm</a>）</li>
+<li><b>品質スコア付きの集計サイト（llm-bench.io、11/4 のデータあり）</b>: Qwen3.8-Flash-Next-oQ3.5e-mtp が品質 91.5／97.2 tok/s、コーディングは Ornith-1.5-35B-A3B 84.8点／112 tok/s。llamaperf にない「品質と速度の両方」の視点（<a href="https://llm-bench.io/hardware/apple-m5-ultra">https://llm-bench.io/hardware/apple-m5-ultra</a>）</li>
+<li><b>AI Runner（韓国語、11/5 更新）</b>: DeepSeek Q2 を ds4 で 128K 要求が 25〜27秒のところ、mlx-serve の MLX 経路だと <b>16.5／16.1秒</b> に（<a href="https://ai-runner.blog.gcempire.net/posts/deepseek-v41-1017-m5ultra-256gb/">https://ai-runner.blog.gcempire.net/posts/deepseek-v41-1017-m5ultra-256gb/</a>）</li>
+</ul>
+<h3>ハーネス・ツール</h3>
+<ul>
+<li><b>oMLX 0.7.4.dev1（11/4）の Prefill Accelerator</b>: 大容量 Mac（例 M3U 512GB）に速い GPU の Mac（例 M5 Max 128GB）を足すと、速い側がプロンプト chunk の先頭層を担って prefill が跳ねる。DeepSeek V4.1 Flash は 1,060→3,123 tok/s（+195%）、Qwen3.8 Flash-Next は +180%。<b>Thunderbolt か 5GbE で OK、RDMA 不要</b>、decode 速度は変わらず KV は大容量側に残る。両 Mac 同じ oMLX バージョンが必要。256GB 一台でも、M5U 同士や M5 Max 足しにする発想が公式に使えるようになった（<a href="https://github.com/jundot/omlx/releases">https://github.com/jundot/omlx/releases</a>）</li>
+<li><b>同バージョンの M5U 向け改善</b>: prefill の buffer pool 化で 43〜48% 高速（#5031）、コールドな shader cache でも最初の 600 トークン decode が 12.4→45.8 tok/s、oQ2e-mtp の prefill が 2,631→3,779 tok/s。<code>omlx launch codex/copilot</code> でエージェントから <code>/model</code> で切り替えられる統合も入った（同上）</li>
+<li><b>安定版 0.7.3 も M5U 実測が公開済み</b>（前回は 0.7.1 まで書いた）: DeepSeek の INT8 Activation Prefill で prefill +22〜29%、<b>12 同時リクエストの合算 decode が 56.3→125.7 tok/s（+123%）</b>（同上）</li>
+<li><b>LM Studio Bionic 1.1.10</b> が Apple Silicon に oMLX エンジンを搭載（llama.cpp 2.66.0 拡張パックも）。リリース日が確認できていないので不確か（<a href="https://lmstudio.ai/changelog/bionic-v1.1.10">https://lmstudio.ai/changelog/bionic-v1.1.10</a>）</li>
+</ul>
+<p><b>次に見るべき点</b>: tacos8me が公開した 3-bit LSQ カーネル・パッチで、他の 256GB オーナーが追試を始めるか。llamaperf のレポート件数（33件）が増え始めると「256GB で 550B 級が実用速度」が確定する。</p>
+</body>
+</html>

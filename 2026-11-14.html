@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境(11/14)</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a1a}
+a{color:#0a66c2;word-break:break-all}
+code{background:#f4f4f5;padding:0 .2em;border-radius:4px;font-size:.92em}
+h2{border-bottom:1px solid #ddd;padding-bottom:.3em;margin-top:2em}
+.home{display:inline-block;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">← 一覧へ戻る</a>
+<p>2026-11-14 08:17 JST</p>
+<h3>何が新しかったか</h3>
+<ul>
+<li>llama.cpp(GGUF 形式のモデルを動かす定番の推論ソフト)に初の番号付き安定版 v1.0.0 が出た(11/13 の夜)。API を保つ方針が明示された節目で、M5U 固有の性能は変わっていない。</li>
+<li>oMLX(MLX 系の高速な推論サーバー)の公式ベンチに 11/13 付の M5U 256GB 実測がまとめて入った。Qwen3.8 Flash-Next を oQ8e(8-bit 相当の MLX 形式)+MTP(複数トークン先読み)で 64k 文脈、入力読み 5,424 tok/s・生成 98 tok/s。</li>
+<li>Apple Silicon 専用の新ハーネス Tokspur が v0.2.0(11/12)まで進み、Qwen3.8 Flash-Next 向けの重みを詰め込んだ GGUF(planar pack)も出た。</li>
+</ul>
+<h3>新着ニュース</h3>
+<ul>
+<li>llama.cpp と ggml(テンソル計算を担う llama.cpp の下支えライブラリ)が、開発元の ggml-org で v1.0.0 として初の番号付き安定版になった(11/13)。以後は API や ABI(呼び出し規約の互換性)が壊れる変更をメジャーバージョンの更新で示す方針を明示。llama.h から非推奨関数 35 個と llama_set_warmup、defrag_thold(メモリ整理の閾値)を削除し、MTP 用の下書き層 API(NextN)を本体ヘッダへ昇格。Homebrew・conda-forge など配布経路も広げた。日々の b 番号のプレリリースは続いており、今朝(11/14)までに b12370。b12344 以降のリリースノートに Metal(Mac の GPU 向けの処理系)・M5U 固有の変更は確認できなかった。 (<a href="https://huggingface.co/blog/ggml-org/llama-cpp-v1">https://huggingface.co/blog/ggml-org/llama-cpp-v1</a>)</li>
+<li>Tokspur(Apple Silicon 専用の Metal 推論エンジン、M5 Max の 128GB 以上を対象)が v0.2.0(11/12)になった。埋め込みだけをホスト側に置き、重みを詰め込んだ planar pack 形式の GGUF で、初回に 80GiB の再パックが要らない仕組み。san-digital/Qwen3.8-Flash-Next-Q4_K-Tokspur-GGUF が Qwen3.8 Flash-Next の 4bit 版+MTP draft(下書き層)を配布。GitHub のリリースは v0.2.0 までだが、README は 0.3.0 を指している(この点は不確か)。リポジトリの紹介では 128GB の M5 Max で 177B 級を 65k 文脈で動かす、とある。 (<a href="https://github.com/san-digital/tokspur">https://github.com/san-digital/tokspur</a> / <a href="https://huggingface.co/san-digital/Qwen3.8-Flash-Next-Q4_K-Tokspur-GGUF">https://huggingface.co/san-digital/Qwen3.8-Flash-Next-Q4_K-Tokspur-GGUF</a>)</li>
+<li>oMLX PR #4087(Qwen3.8 の読み込み中に元の断片を残し続けてメモリを二重に使う問題の修正)を取り上げた記事を見かけたが、PR 自体は 9/30 にマージ済みで 0.8.0rc1 に既に入っている。新着ではない。 (<a href="https://github.com/jundot/omlx/pull/4087">https://github.com/jundot/omlx/pull/4087</a>)</li>
+</ul>
+<h3>実行環境・事例</h3>
+<ul>
+<li>oMLX 公式ベンチに 11/13 付の M5U 256GB 実測がまとまって入った(64k 文脈の条件)。</li>
+</ul>
+<p>  - Qwen3.8-Flash-Next oQ4e(4-bit 相当)+MTP: 入力読み 6,172 tok/s・生成 114.9 tok/s(別投稿で 5,416/71.5)</p>
+<p>  - GLM-5.3-Flash oQ4e+MTP: 入力読み 2,221・生成 68.2</p>
+<p>  - Qwen3.8-Flash-Next oQ8e+MTP: 入力読み 5,424・生成 98.0。256GB でも 8-bit が動いた形。</p>
+<p>  - Qwen3.8 27B oQ8e+MTP: 入力読み 1,002〜1,656・生成 26〜72(投稿 8 件)</p>
+<p>  (<a href="https://omlx.ai/benchmarks/performance?chip=M5&amp;context=65536&amp;order=desc&amp;quantization=4bit&amp;sort=created_at">https://omlx.ai/benchmarks/performance?chip=M5&amp;context=65536&amp;order=desc&amp;quantization=4bit&amp;sort=created_at</a> / <a href="https://omlx.ai/benchmarks/performance?chip=M5&amp;context=65536&amp;quantization=8bit&amp;sort=created_at&amp;order=desc">https://omlx.ai/benchmarks/performance?chip=M5&amp;context=65536&amp;quantization=8bit&amp;sort=created_at&amp;order=desc</a>)</p>
+<ul>
+<li>llamaperf(コミュニティの実測集計サイト)は 35 件のまま(前回と同数)。前回報告に載せられなかった 11/10 付のレポートで、Qwen3.8 Flash-Next Uncensored(表現規制を外した改造版)を oQ5e(5-bit 相当)+MTP で、入力 4,096 token・出力 3,000 token の条件で生成 239.3 tok/s・入力読み 4,316.6 tok/s(メモリ使用量の最大 122.9GB)。文脈を 16K に伸ばすと生成 155.0、64K で 127.1 tok/s に落ち、2 件を同時実行したときは合計 172.8 tok/s(単独の 0.72 倍)。 (<a href="https://llamaperf.com/gpu/m5-ultra-256gb/reports">https://llamaperf.com/gpu/m5-ultra-256gb/reports</a>)</li>
+<li>llama.cpp b12370(今朝 7:59 JST 付)。上の v1.0.0 と同じく、Metal・M5U 固有の動きは確認できなかった。 (<a href="https://github.com/ggml-org/llama.cpp/releases">https://github.com/ggml-org/llama.cpp/releases</a>)</li>
+</ul>
+<h3>向いているモデル</h3>
+<ul>
+<li>Qwen3.8 Flash-Next が最有力のまま。oQ4e〜oQ5e+MTP で 64k 文脈でも生成 71〜115 tok/s、oQ8e でも 98 tok/s(上記の実測)。</li>
+<li>mlx-community(MLX 用の量子化を集める公開組織)に Inkling-2-Small(Thinking Machines Lab の新マルチモーダルモデル、1M 文脈対応)の 4bit 版と oQ4e 版が 11/13 に 2 件(oQ4e は MTP タグ付き)。パラメータ数はモデルカードで読み取れず、M5U で動くかは未確認。 (<a href="https://huggingface.co/mlx-community/Inkling-2-Small-oQ4e">https://huggingface.co/mlx-community/Inkling-2-Small-oQ4e</a>)</li>
+<li>DeepSeek V4.1 は改造版 GGUF・ablit 版の新着が続くが、品質面の新選択肢ではない。 (<a href="https://huggingface.co/kikukikukiku/DeepSeek-V4.1-Flash-Abliterated">https://huggingface.co/kikukikukiku/DeepSeek-V4.1-Flash-Abliterated</a>)</li>
+</ul>
+<h3>ハーネス・ツール</h3>
+<ul>
+<li>oMLX 0.8.0rc1 のまま(前回既報)。Prefill Accelerator(長い入力の読み込みを、速い側のマシンに手伝わせる仕組み)の正式版を待つ段階。</li>
+<li>llama.cpp v1.0.0(上記)。</li>
+<li>vLLM Metal(vLLM の Mac GPU 版)dev v0.33.0.dev20261112090227 のまま(前回既報)。</li>
+<li>Tokspur v0.2.0(上記、新登場)。</li>
+</ul>
+<h3>GitHub・Hugging Face</h3>
+<ul>
+<li>GitHub: M5U 系の新リポジトリなし。san-digital/tokspur を新たに見つけた(初版 11/9、v0.2.0 11/12)。</li>
+<li>HF(Hugging Face): 上記の Inkling-2-Small MLX 版・Tokspur planar pack・DeepSeek 改造版。</li>
+</ul>
+<h3>X関連の投稿</h3>
+<p>11/12〜13 の新着は拾えなかった(検索で拾えたのは既報の「1 台か 2 台か」の論争系と、無関係な話題の投稿ばかり)。</p>
+<h3>次に見るべき点</h3>
+<p>oMLX 0.8.0 正式版の公開。加えて、Tokspur の planar pack とホスト埋め込み分離の発想が M5U 256GB でどれほど効くか(常駐メモリの減らし方)。</p>
+</body>
+</html>

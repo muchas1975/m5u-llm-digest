@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/13・15時補完分）</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a1a}
+a{color:#0a66c2;word-break:break-all}
+code{background:#f4f4f5;padding:0 .2em;border-radius:4px;font-size:.92em}
+h2{border-bottom:1px solid #ddd;padding-bottom:.3em;margin-top:2em}
+.home{display:inline-block;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">← 一覧へ戻る</a>
+<p>2026-11-13 15:30 JST</p>
+<h3>何が新しかったか</h3>
+<ul>
+<li>oMLX（MLX系の高速な推論サーバー）の 0.8.0rc1（11/12）が公開。2台目のMacやNVIDIAのGPU搭載PCを「入力読み専門」として使う Prefill Accelerator が、正式版候補に昇格した。</li>
+<li>今朝8時の定期実行は2件とも失敗した（ネットワークの一時的な切断と、応答待ち61分での打ち切り）。この報告は15時に手動でやり直したもの。</li>
+<li>llamaperf（コミュニティの実測集計サイト）は35件のまま。llama.cpp は b12344（11/13朝）まで進んだが、目立つ性能改善は見つからなかった。</li>
+</ul>
+<h3>新着ニュース</h3>
+<ul>
+<li><b>oMLX 0.8.0rc1（11/12）</b>: Prefill Accelerator（長い入力の読み込みを、速い側のマシンに手伝わせる仕組み）が NVIDIA PC・DGX Spark（NVIDIAの小型AIマシン）・2台目のMacに対応。M3 Ultra 512GB に RTX A6000 を2枚足した構成の64K入力実測では、Qwen3.8 27B が352→1,879 tok/s（+434%）、Flash-Next が1,370→3,928（+187%）、DeepSeek V4.1 Flash が1,085→1,914（+76%）、GLM-5.3 Flash が555→978（+76%）。2.5GbE（2.5Gbpsの有線LAN）接続でこの数字。分割しても速くならないと測ったときは自動で1台だけで処理する仕組みも入った。DeepSeek V4.1 は、リクエストが増えても draft（DSpark。下書きを先に作って本モデルが検証する方式）の速度が落ちない修正、tensor並列クラスタが単体と同じ高速カーネルを使える修正も含む（<a href="https://github.com/jundot/omlx/releases/tag/v0.8.0rc1">https://github.com/jundot/omlx/releases/tag/v0.8.0rc1</a>）</li>
+<li><b>DGX Spark 4台で DeepSeek を16人同時応答（11/9報道）</b>: 200Gスイッチ接続の4台構成で、DeepSeek 専用に書かれたオープンソースの推論エンジンを使い、1人で80〜138 tok/s、16人同時で合計380 tok/s、入力読み10,000 tok/s。SGLang（別の推論エンジン）の4台構成より1人時で18〜25%速い。数値は開発側の公表で、第三者の再現はまだない（<a href="https://synon.co.jp/article/news/2026-11-11-local-llm-radar">https://synon.co.jp/article/news/2026-11-11-local-llm-radar</a>）</li>
+<li><b>Ollama 0.40.16（11/9）</b>: Appleシリコンで Qwen3.8 Flash-Next の使用メモリが約27GiB減。65Bの密モデル「Ripple Preview」を追加（<a href="https://synon.co.jp/article/news/2026-11-11-local-llm-radar">https://synon.co.jp/article/news/2026-11-11-local-llm-radar</a> ）</li>
+</ul>
+<h3>実行環境・事例</h3>
+<ul>
+<li><b>Chiphell（中国のPC自作系掲示板）の長期使用記（11/11）</b>: M5U 256GB で70〜120GB級のモデルを常駐させ、長く続く Agent 仕事を回す運用を実測した投稿。結論は「256GBで買えるのは極限の速度ではなく、複数の仕事を同時に常駐させる自由。エンジン選びと設定調整が前提」。本文は検索結果の抜粋までしか読めておらず、中の数字は書けない（<a href="https://www.chiphell.com/thread-2917649-1-1.html">https://www.chiphell.com/thread-2917649-1-1.html</a> ）</li>
+<li><b>llamaperf に DeepSeek V4.1 abliterated（表現規制を外した改造版）の新レポート</b>: oMLX・文脈1,025で decode 55.3 tok/s・入力読み640.8 tok/s（<a href="https://llamaperf.com/gpu/m5-ultra-256gb/reports">https://llamaperf.com/gpu/m5-ultra-256gb/reports</a> ）</li>
+</ul>
+<h3>向いているモデル</h3>
+<p>昨日からの大きな追加なし。Hugging Face の新着は DeepSeek の改造版GGUF（Huihui、Basalt など）が中心で、品質面の新選択肢ではない（<a href="https://huggingface.co/notindependentwhoisthat/DeepSeek-V4.1-Flash-1017-Huihui-UD-Q2_K_XL-GGUF">https://huggingface.co/notindependentwhoisthat/DeepSeek-V4.1-Flash-1017-Huihui-UD-Q2_K_XL-GGUF</a> ）</p>
+<h3>ハーネス・ツール</h3>
+<ul>
+<li><b>oMLX 0.8.0rc1</b>: 上記のとおり。CUDA helper は TensorFold（むってぃの環境と同じ系統のMLX系推論サーバー）と mlx-serve のカーネルを統合していて、両作者に謝辞がある。むってぃの環境で確認した「GLMのdecodeがレシピで3倍」という Tom's Hardware の話と、同じ方向の動き（<a href="https://github.com/jundot/omlx/releases/tag/v0.8.0rc1">https://github.com/jundot/omlx/releases/tag/v0.8.0rc1</a> ）</li>
+<li><b>llama.cpp</b>: b12344（11/13朝）。11/11以降のコミットを確認した範囲では、Metal（MacのGPU向けの処理系）やM5U固有の性能改善はなく、CUDAのMoE修正1件のみだった（<a href="https://github.com/ggml-org/llama.cpp/releases">https://github.com/ggml-org/llama.cpp/releases</a> ）</li>
+<li><b>vLLM Metal</b>: dev版 v0.33.0.dev20261112090227（11/12）（<a href="https://github.com/vllm-project/vllm-metal/releases">https://github.com/vllm-project/vllm-metal/releases</a> ）</li>
+<li><b>mlx-serve</b>: v26.11.2 のまま（11/6、既報）。oMLX 0.8.0rc1 のCUDA helper にmlx-serveのカーネルが使われたことで、mlx-serve側の成果がoMLX利用者にも届く形になった</li>
+</ul>
+<h3>GitHub・Hugging Face</h3>
+<ul>
+<li>GitHub: M5U系の新リポジトリなし。oMLX 0.8.0rc1 が最大の動き。</li>
+<li>Hugging Face（11/12〜13）: <b>cowboycoderhq/GLM-5.3-Flash-2xM5Max-Pipeline</b>（M5 Max 2台で GLM-5.3-Flash をパイプライン運用するリポジトリ、11/12）（<a href="https://huggingface.co/cowboycoderhq/GLM-5.3-Flash-2xM5Max-Pipeline">https://huggingface.co/cowboycoderhq/GLM-5.3-Flash-2xM5Max-Pipeline</a> ）。あとはDeepSeekの改造版GGUF数件（上記）。</li>
+</ul>
+<h3>X関連の投稿</h3>
+<p>11/12〜13の新着は拾えなかった。前回までに拾えていなかったものから1件: <b>@ivanfioravanti</b>「1.2TB/sの帯域を持つMacが、長い文脈・複数ユーザーでDGX Sparkに負けるのはなぜか。1人だけならdecodeはメモリの読み出し速度で決まるはず」— 「2台が得か1台が得か」の論争（tomgreenwald vs Viktri1）と同じ論点を、複数ユーザー側から問い直した内容（<a href="https://x.com/ivanfioravanti/status/2115708080012800002">https://x.com/ivanfioravanti/status/2115708080012800002</a> ）※投稿日の正確な確認はできていない（x.com の閲覧制限のため）</p>
+<h3>次に見るべき点</h3>
+<p>oMLX 0.8.0 正式版の公開と、0.8.0rc1 の M5U 256GB 実測（llamaperf）。NVIDIA PC を手伝わせる構成が M5U 単体運用の常識を変えるか。</p>
+</body>
+</html>

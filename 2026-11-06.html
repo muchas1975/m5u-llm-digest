@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>朝リサーチ: M5 Ultra 256GB の LLM 実行環境（11/6、初回）</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.7;color:#1a1a1a}
+a{color:#0a66c2;word-break:break-all}
+code{background:#f4f4f5;padding:0 .2em;border-radius:4px;font-size:.92em}
+h2{border-bottom:1px solid #ddd;padding-bottom:.3em;margin-top:2em}
+.home{display:inline-block;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<a class="home" href="index.html">← 一覧へ戻る</a>
+<p>2026-11-06 18:40 JST</p>
+<p><b>何が新しかったか</b></p>
+<ul>
+<li>256GB で DeepSeek V4.1-Flash 552B をフルに載せて 1M トークン・コンテキスト、decode 92 tok/s の実測が出た（10/31）。</li>
+<li>日本語の実検証記事が 11/3 に公開：「Claude Code の開発ワーカーにローカルLLMを混ぜる」を実案件で測った結果、GLM-5.3-Flash が本命だが分業構成は割に合わない、という結論。</li>
+<li>Apple 公式が MLX + RDMA 分散推論の使い方を公開（10/15）。LM Studio は 10/31 に 0.4.28。</li>
+</ul>
+<h3>新着ニュース</h3>
+<ul>
+<li><b>552B が 256GB でフル実行</b>： DeepSeek V4.1-Flash（552B・アクティブ16B、10/17 オープンソース版）を 3bit 量子化（重み約207GB、残り約49GB）で MLX に載せ、KVキャッシュ bf16・コンテキスト 1M で decode 92 tok/s、prefill 3883 tok/s、MTP／PLD 併用で最大 163 tok/s。条件は concurrency 1・greedy・3回の median（<a href="https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584">https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584</a>）</li>
+<li>※この数字はコミュニティのツイート画像がソースで、第三者の独立再現はまだ無い。「不確か」として扱う（同記事も明記）。</li>
+<li><b>llamaperf の集計（11/6 更新）</b>： M5 Ultra 256GB のレポートは 33 件に増加。最多で走られているのは DeepSeek V4.1 Flash 552B（3-bit）で median 73.4 tok/s・prefill 1010 tok/s（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a>）</li>
+<li><b>Apple 公式</b>（10/15）: MLX v0.30.1 以降で Thunderbolt 5 経由 RDMA（jaccl）対応の分散推論を解説（<a href="https://machinelearning.apple.com/research/mlx-distributed-inference">https://machinelearning.apple.com/research/mlx-distributed-inference</a>）</li>
+<li><b>Bohemian Silicon</b>（10/22）: 16 モデルを同時に 1 時間フル負荷 → 約98万トークン生成、100万トークンあたり 0.074 kWh。熱も速度も落ちず（<a href="https://bohemiansilicon.com/blog/mac-studio-m5-ultra-one-hour-ai-load-test/">https://bohemiansilicon.com/blog/mac-studio-m5-ultra-one-hour-ai-load-test/</a>）</li>
+</ul>
+<h3>実行環境・事例</h3>
+<ul>
+<li><b>日本語の実検証（11/3、tchikuba）</b>: Rails の実案件 PR 18 件を Claude Code ハーネスで測定。GLM-5.3-Flash（oMLX + oQ4e + MTP、182GB）は 69〜73 tok/s、完走すれば Sonnet と同等の品質（採点者はモデル名を知らず A/S 評価）だが時間は 4〜15 倍、大きな課題では 3 回中 2 回がターン上限。Qwen3-Coder-Next は 110 tok/s と速いが自然言語の課題文で品質が崩れる（合格 50%）。<b>「Claude が仕様整理 → ローカルが実装 → Claude がレビュー」の分業は、費用も速度も Claude 単独に負けた</b>（指揮・レビューのトークンが本体の実装コストを上回る）。結論は「急がない小〜中の課題を夜間に流す補助レーン」（<a href="https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/">https://tchikuba.github.io/blog/2026/11/03/local-llm-on-mac-studio/</a>）</li>
+<li><b>同記事の重要な発見</b>： LLM のレビューは品質ゲートにならない——GLM 実装の欠陥を Opus が 3 件中 3 件見逃して approve。自動テストを必ず置くべき（同上）。</li>
+<li><b>256GB オーナー向けの注意</b>（同記事）： macOS の「動く壁紙（Aerial）」が動画デコードの常駐プロセス（VTDecoderXPCService）を 10 時間で約 104GB まで膨らませ、モデルロードを強制終了させた。静止画に変えると 22MB に戻り増えも止まる。大型モデルを載せる前は <code>footprint</code> や <code>top -o mem</code> で常駐メモリを確認。</li>
+<li><b>GPU の wired 上限</b>： 既定のままで約 240GiB 使えるので、200GB 級のモデルも設定変更なしで載る。上限を引き上げない方が安全（同上）。</li>
+<li><b>Apple 公式の分散推論</b>（10/15）: 単体 M5 Ultra は M3 Ultra 比で TTFT 最大 4.6 倍（Neural Accelerator 効果）、decode 1.6 倍（1.2TB/s）。Muse Spark Open（816B・NVFP4・493GB）は 4 台テンソル並列で 36.7 tok/s。<code>mlx_lm.server</code> を OpenCode に接続する手順も掲載（<a href="https://machinelearning.apple.com/research/mlx-distributed-inference">https://machinelearning.apple.com/research/mlx-distributed-inference</a>）</li>
+</ul>
+<h3>向いているモデル（256GB 実測）</h3>
+<ul>
+<li><b>DeepSeek V4.1 Flash 552B・3-bit</b>（重み207GB）: 92 tok/s、prefill 3883 tok/s、1M コンテキスト（10/31 実測。※コミュニティ情報、未独立再現）（<a href="https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584">https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584</a>）</li>
+<li><b>GLM-5.3 Flash（320B・アクティブ18B）</b>: oMLX oQ4e + MTP で 80〜90 tok/s（llamaperf の複数レポート、一部は 61〜76 tok/s）（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a>）</li>
+<li><b>Qwen3.8 Flash-Next（125B・アクティブ6B）</b>: oMLX Q6_K_XL で 141 tok/s。2 台クラスタ（Q6・Tensorfold）では decode 200 tok/s・prefill 8000 tok/s（同上）</li>
+<li><b>Qwen3.5 122B・アクティブ10B</b>: 4-bit で 74.7 tok/s（同上）</li>
+<li><b>Qwen3.8 27B（dense）</b>: MLX 4-bit で 47.6 tok/s（同上）</li>
+<li>傾向として、256GB の本命は「207GB 超の 550B 級を 3-bit で」「180GB 級の 300B 級を 4-bit で」の2レーン。dense 27B 級は余りを KV や並列に回す用途。</li>
+</ul>
+<h3>ハーネス・ツール</h3>
+<ul>
+<li><b>LM Studio 0.4.28</b>（10/31）。0.4.27（10/29）は M5 世代 Metal runtime の互換性チェック修正・Neural Engine Prefill の設定追加。0.4.26（10/13）で llama.cpp runtime を 2.50.0（upstream b11337）に更新（<a href="https://lmstudio.ai/changelog/lmstudio">https://lmstudio.ai/changelog/lmstudio</a>）</li>
+<li><b>注意</b>: LM Studio の llama.cpp runtime が M5 世代で Metal 4 の tensor API（Neural Accelerator）を有効化できておらず、GGUF の prefill が 2〜3 倍遅い問題が issue #2040 でまだ open。MLX 系ランタイムは影響なし。0.4.27 の修正で直ったかは不確か。prefill 重視なら MLX／oMLX 系が安全（<a href="https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2040">https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2040</a>）</li>
+<li><b>Ollama 0.40</b>（9/25 リリース）: 対応アーキテクチャのモデルは Apple Silicon で MLX をデフォルト実行に（<a href="https://jacar.es/en/ollama-0-40-mlx-default-apple-silicon/">https://jacar.es/en/ollama-0-40-mlx-default-apple-silicon/</a>）</li>
+<li><b>oMLX</b> が 256GB では最も人気のエンジン（llamaperf 33 件中 15 件が oMLX、MLX 7 件）。0.7.1 で GLM が +20〜30 tok/s、0.7.3rc1 まで出ている（<a href="https://llamaperf.com/gpu/m5-ultra-256gb">https://llamaperf.com/gpu/m5-ultra-256gb</a>）</li>
+<li><b>MLX-Serve プラグイン</b>（10/30）: DeepSeek 4.1 向けコミュニティ STQ カーネル対応が発表（10/31 記事が報道）（<a href="https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584">https://www.besthub.dev/articles/552b-deepseek-on-m5-ultra-256gb-3883-prefill-92-decode-tok-s-local-full-scale-llm-achieved-495dc311f584</a>）</li>
+<li><b>llama.cpp</b>: b12100 pre-release（11/4）で <code>-hf</code> タグの量子化名マッチ修正など（<a href="https://newreleases.io/project/github/ggml-org/llama.cpp/release/b12100">https://newreleases.io/project/github/ggml-org/llama.cpp/release/b12100</a>）</li>
+</ul>
+<p><b>次に見るべき点</b>： DeepSeek 552B・3-bit の「92 tok/s」の独立再現。ddalcu の 3.0bpw モデルファイルの公開が待たれていて、他の 256GB オーナーが追試を始めれば「256GB でフロンティア級が実用速度で動く」ことが確定する。</p>
+</body>
+</html>
